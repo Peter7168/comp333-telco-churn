@@ -6,13 +6,13 @@ The experiments clean inside each fold; this step produces the tables the
 dashboard and the report read. It also saves the null and outlier reports.
 """
 import pandas as pd
-from sklearn.feature_selection import mutual_info_classif
 
 from src import lake
 from src.clean import handle_nulls, handle_outliers, null_report, outlier_report
 from src.config import LEAKY_COLUMNS, TABLES, TARGET
 from src.experiments import FINAL
-from src.features import ENG_BINARY, ENG_CATEGORICAL, ENG_NUMERIC, add_features, columns
+from src.features import (ENG_BINARY, ENG_CATEGORICAL, ENG_NUMERIC, add_features, columns,
+                          rank_features)
 
 
 def clean_full(df):
@@ -23,20 +23,20 @@ def clean_full(df):
 
 
 def feature_ranking(gold):
-    """Rank every model feature by mutual information with churn (a filter method)."""
+    """Rank every model feature by mutual information with churn."""
     binary, numeric, categorical = columns(use_source2=True, use_engineered=True)
-    X = gold[binary + numeric + categorical].copy()
-    for col in categorical:
-        X[col] = X[col].astype("category").cat.codes
-    discrete = [c in binary or c in categorical for c in X.columns]
-    mi = mutual_info_classif(X, gold[TARGET], discrete_features=discrete, random_state=42)
+    mi = rank_features(gold, binary, numeric, categorical, TARGET)
+    source1 = set(sum(columns(False, False), []))
     engineered = set(ENG_BINARY + ENG_NUMERIC + ENG_CATEGORICAL)
-    ranking = pd.DataFrame({"feature": X.columns, "mutual_info": mi.round(4)})
-    ranking["origin"] = ranking["feature"].map(
-        lambda f: "ETL (engineered)" if f in engineered else "source 1" if f in
-        columns(False, False)[0] + columns(False, False)[1] + columns(False, False)[2]
-        else "source 2")
-    return ranking.sort_values("mutual_info", ascending=False)
+
+    def origin(feature):
+        if feature in engineered:
+            return "ETL (engineered)"
+        return "source 1" if feature in source1 else "source 2"
+
+    ranking = pd.DataFrame({"feature": mi.index, "mutual_info": mi.round(4).to_numpy()})
+    ranking["origin"] = ranking["feature"].map(origin)
+    return ranking
 
 
 def run(df=None):

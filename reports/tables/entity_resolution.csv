@@ -1,0 +1,18 @@
+check,value
+source 1 IDs,"7,043"
+source 1 duplicate IDs,0
+source 2 IDs,"7,043"
+source 2 duplicate IDs,0
+IDs with the expected format (1234-ABCDE),"14,086"
+IDs found in both sources,"7,043"
+"source 1 look-alike customers (same attributes, different ID)",106
+"source 2 look-alike customers (same attributes, different ID)",106
+all possible pairs (no blocking),"49,603,849"
+candidate pairs after blocking,"15,241"
+pairs avoided by blocking (%),99.97
+true match kept in its block (%),100.0
+customers matched to exactly one record,"6,931"
+"of those, matched to the right customer","6,931"
+precision (%),100.0
+recall (%),98.41
+ambiguous (tie between look-alike customers),112

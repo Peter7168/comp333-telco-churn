@@ -2,6 +2,7 @@
 
   1. ingest       raw CSV + XLSX files      -> bronze
   2. integrate    schema mapping + joins    -> silver/customers_integrated
+  2b. entity resolution: match the sources without the ID, as a check on the join
   3. dependencies functional dependency checks
   4. etl          cleaning + new features   -> silver/customers_clean, gold/customer_features
   5. experiments  F1 with and without each cleaning / transformation step
@@ -13,7 +14,8 @@ Add --skip-experiments to skip step 5 (it takes about 5 minutes).
 import sys
 import time
 
-from src import dependencies, etl, experiments, figures, ingest, integrate, lake, train
+from src import (dependencies, entity_resolution, etl, experiments, figures, ingest,
+                 integrate, lake, train)
 
 
 def step(name, fn, *args):
@@ -30,6 +32,7 @@ def main():
 
     step("ingest", ingest.run)
     integrated = step("integrate", integrate.run)
+    step("entity resolution", entity_resolution.run)
     step("dependencies", dependencies.run, integrated)
     step("etl", etl.run, integrated)
     if not skip_experiments:

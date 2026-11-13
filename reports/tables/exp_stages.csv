@@ -1,6 +1,6 @@
-experiment,stage,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
-stages,1. raw source 1,0.6263,0.746,0.5143,0.8013,0.8442,0.0228,4500,1125,19,False,False,drop_rows,keep,none,none,ordinal,logreg
-stages,2. + cleaning,0.6263,0.7464,0.5143,0.8013,0.8444,0.0226,4507,1126,19,False,False,cross_source,cap_iqr,none,none,ordinal,logreg
-stages,3. + transformation,0.6341,0.7574,0.5287,0.7926,0.8499,0.0216,4507,1126,40,False,False,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
-stages,4. + integration (source 2),0.6811,0.8009,0.5922,0.8013,0.8891,0.0254,4507,1126,1155,True,False,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
-stages,5. + ETL features,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
+experiment,stage,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model,top_k
+stages,1. raw source 1,0.6263,0.746,0.5143,0.8013,0.8442,0.0228,4500,1125,19,False,False,drop_rows,keep,none,none,ordinal,logreg,0
+stages,2. + cleaning,0.6262,0.7462,0.5141,0.8013,0.8445,0.0227,4507,1126,19,False,False,constant,cap_iqr,none,none,ordinal,logreg,0
+stages,3. + transformation,0.6325,0.7559,0.5268,0.792,0.8496,0.0208,4507,1126,40,False,False,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+stages,4. + integration (source 2),0.682,0.8012,0.5926,0.8033,0.8891,0.0244,4507,1126,1155,True,False,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+stages,5. + ETL features,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0

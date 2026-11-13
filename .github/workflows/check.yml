@@ -1,0 +1,25 @@
+name: pipeline check
+
+# Installs the real requirements on a clean machine, runs the pipeline with
+# Delta Lake, then tests the lake, the model and the Streamlit dashboard.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install requirements
+        run: pip install -r requirements.txt pytest
+      - name: Run the pipeline (experiment tables are already in the repo)
+        run: python -m src.pipeline --skip-experiments
+      - name: Test lake, model and dashboard
+        run: pytest -q tests

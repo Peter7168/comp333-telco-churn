@@ -1,5 +1,5 @@
-experiment,model,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder
-models,logreg,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
-models,knn,0.6074,0.8044,0.6506,0.5699,0.848,0.0229,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
-models,random_forest,0.6556,0.7806,0.5619,0.7873,0.866,0.0141,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
-models,hist_gb,0.6917,0.8209,0.6372,0.7565,0.8968,0.0169,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
+experiment,model,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,top_k
+models,logreg,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,0
+models,knn,0.6085,0.8046,0.6505,0.5719,0.8474,0.0208,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,0
+models,random_forest,0.6573,0.7819,0.5636,0.7886,0.8658,0.0142,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,0
+models,hist_gb,0.696,0.8245,0.6442,0.7572,0.8967,0.0184,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,0

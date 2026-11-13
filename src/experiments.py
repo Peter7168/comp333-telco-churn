@@ -23,7 +23,7 @@ from sklearn.pipeline import Pipeline
 from src import lake
 from src.clean import NULL_STRATEGIES, OUTLIER_STRATEGIES, handle_nulls, handle_outliers
 from src.config import SEED, TABLES, TARGET
-from src.features import SKEWED, add_features, columns, present
+from src.features import SKEWED, add_features, columns, present, rank_features
 from src.transform import ENCODERS, NORMALIZERS, SCALERS, build_preprocessor
 
 # Cities that only appear in a test fold are expected (they become all zeros),
@@ -36,12 +36,13 @@ warnings.filterwarnings("ignore", category=ConvergenceWarning)
 class Recipe:
     use_source2: bool = True
     use_engineered: bool = True
-    nulls: str = "cross_source"
+    nulls: str = "constant"
     outliers: str = "cap_iqr"
     normalizer: str = "yeo_johnson"
     scaler: str = "standard"
     encoder: str = "onehot"
     model: str = "logreg"
+    top_k: int = 0          # keep only the k best-ranked features (0 = keep all)
 
 
 # The setup we present as our final pipeline. Experiments vary one field at a time.
@@ -82,6 +83,12 @@ def prepare_fold(train, test, recipe):
 
     binary, numeric, categorical = (present(binary, train), present(numeric, train),
                                     present(categorical, train))
+    if recipe.top_k:
+        # I rank on the training rows only, so the held-out fold has no say in the choice.
+        best = set(rank_features(train, binary, numeric, categorical, TARGET).index[:recipe.top_k])
+        binary, numeric, categorical = ([c for c in binary if c in best],
+                                        [c for c in numeric if c in best],
+                                        [c for c in categorical if c in best])
     pre = build_preprocessor(binary, numeric, categorical, SKEWED,
                              scaler=recipe.scaler, normalizer=recipe.normalizer,
                              encoder=recipe.encoder)
@@ -172,7 +179,7 @@ def run_stress(df):
     recipes = [("clean data (reference)", base, df)]
     recipes += [(f"nulls: {s}", replace(base, nulls=s, outliers="keep"), dirty)
                 for s in NULL_STRATEGIES]
-    recipes += [(f"outliers: {s}", replace(base, nulls="cross_source", outliers=s), dirty)
+    recipes += [(f"outliers: {s}", replace(base, outliers=s), dirty)
                 for s in OUTLIER_STRATEGIES]
     rows = []
     for label, recipe, data in recipes:
@@ -229,6 +236,11 @@ def run(df=None):
     results["models"] = run_grid(df, "models", "model",
                                  [(m, replace(FINAL, model=m))
                                   for m in ("logreg", "knn", "random_forest", "hist_gb")])
+
+    print("feature selection")
+    results["feature_selection"] = run_grid(
+        df, "feature_selection", "features",
+        [(f"top {k}", replace(FINAL, top_k=k)) for k in (5, 10, 15, 20, 30)] + [("all", FINAL)])
 
     print("stress test (simulated dirty data)")
     results["stress"] = run_stress(df)

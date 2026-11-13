@@ -59,6 +59,9 @@ def handle_nulls(train, test, strategy):
     if strategy == "cross_source":
         # Source 2 has values where source 1 is blank (e.g. the 11 new customers).
         # Anything still missing after that falls back to the median.
+        # We compare this option but do not use it in the final pipeline: for those 11
+        # customers source 2 also says tenure 10 while source 1 says 0, so copying only
+        # the total would leave rows with tenure 0 and 10 months of charges.
         for col, backup in BACKUPS.items():
             if col in train and backup in train:
                 train[col] = train[col].fillna(train[backup])
@@ -66,7 +69,8 @@ def handle_nulls(train, test, strategy):
         strategy = "statistical"
 
     if strategy == "constant":
-        # Phase 1 rule: the 11 blank totals are customers not billed yet, so 0.
+        # Phase 1 rule and our final choice: the 11 blank totals are customers with
+        # tenure 0 who have not been billed yet, so their total is 0.
         fills = {c: 0.0 for c in numeric}
     elif strategy == "statistical":
         fills = {c: train[c].median() for c in numeric}

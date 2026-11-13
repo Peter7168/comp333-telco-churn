@@ -1,5 +1,5 @@
-experiment,normalizer,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,scaler,encoder,model
-normalizers,none,0.6761,0.7966,0.5856,0.8,0.8876,0.0215,4507,1126,1168,True,True,cross_source,cap_iqr,standard,onehot,logreg
-normalizers,log,0.6798,0.7985,0.5878,0.806,0.889,0.0236,4507,1126,1168,True,True,cross_source,cap_iqr,standard,onehot,logreg
-normalizers,yeo_johnson,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,standard,onehot,logreg
-normalizers,quantile,0.6697,0.7927,0.5802,0.792,0.8805,0.025,4507,1126,1168,True,True,cross_source,cap_iqr,standard,onehot,logreg
+experiment,normalizer,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,scaler,encoder,model,top_k
+normalizers,none,0.6771,0.7973,0.5867,0.8007,0.8876,0.0206,4507,1126,1168,True,True,constant,cap_iqr,standard,onehot,logreg,0
+normalizers,log,0.6796,0.7982,0.5872,0.8067,0.8892,0.0231,4507,1126,1168,True,True,constant,cap_iqr,standard,onehot,logreg,0
+normalizers,yeo_johnson,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,standard,onehot,logreg,0
+normalizers,quantile,0.669,0.7918,0.5788,0.7926,0.8806,0.0253,4507,1126,1168,True,True,constant,cap_iqr,standard,onehot,logreg,0

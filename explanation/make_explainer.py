@@ -201,6 +201,8 @@ def examples():
 def step_examples(ex):
     """One block per pipeline step: what it does, then a before -> after table."""
     s1p, s1b, s2s, s2d = ex["s1_prof"], ex["s1_bill"], ex["s2_srv"], ex["s2_dem"]
+    er = pd.read_csv(TABLES / "entity_resolution.csv").set_index("check")["value"]
+    fs = pd.read_csv(TABLES / "exp_feature_selection.csv").set_index("features")
     i, g = ex["integ"], ex["gold"]
     W3 = [2.0 * inch, 2.35 * inch, 2.65 * inch]
     out = []
@@ -246,7 +248,14 @@ def step_examples(ex):
             "Joined on customer ID"]],
           note="We also check rules that should always hold, called <b>functional dependencies</b>. "
                "Example: a zip code always belongs to one city (true for all 1,626 zip codes), and "
-               "anyone aged 65 or more is marked senior citizen (true for every customer).")
+               "anyone aged 65 or more is marked senior citizen (true for every customer).<br/><br/>"
+               "<b>Entity resolution.</b> Both sources share a customer ID, so the join is easy. "
+               "To check the link is trustworthy we also matched the sources <i>without</i> the ID, "
+               f"using only attributes such as charges, tenure and services. That finds the right "
+               f"customer for {er['customers matched to exactly one record']} of 7,043 with "
+               f"{er['precision (%)']}% precision. The other "
+               f"{er['ambiguous (tie between look-alike customers)']} are look-alike customers "
+               "(same bill, same services), which is why a real key matters.")
 
     before, after = ex["blank"]
     big, fence = ex["outlier"]
@@ -256,7 +265,8 @@ def step_examples(ex):
           [["Before", "After", "Why"],
            [f"Customer {before['customer_id']}: total charges = <i>blank</i>",
             f"total charges = {after['total_charges']:.2f}",
-            "Source 2 has the value, so we copy it (11 customers)"],
+            "New customer with tenure 0, not billed yet, so the total is 0 (11 customers). "
+            "Source 2 has a value but it assumes 10 months of tenure, so we don't copy it"],
            [f"Customer {ex['no_offer_id']}: offer = <i>blank</i>",
             "offer = \"None\"",
             "Blank here means they never got an offer (3,877 customers)"],
@@ -302,10 +312,12 @@ def step_examples(ex):
           "(see \"Training, validation and test sets\" below).",
           [["We compared", "Options", "We kept"],
            ["Ways to fill blanks", "6 (delete rows, delete columns, 0, median, copy from source 2, "
-                                   "nearest neighbours)", "copy from source 2"],
+                                   "nearest neighbours)", "0 for new, unbilled customers"],
            ["Ways to handle extremes", "5 (keep, remove, cap, z-score, Isolation Forest)", "cap"],
            ["Ways to scale numbers", "6 scalers × 2 models", "standard"],
            ["Ways to encode text", "5 encoders", "one-hot"],
+           ["How many features", "best 5, 10, 15, 20, 30 or all 47",
+            f"all (best 10 alone: {fs.loc['top 10', 'f1']:.2f}, all: {fs.loc['all', 'f1']:.2f})"],
            ["Models", "4 (logistic regression, KNN, random forest, gradient boosting)",
             "gradient boosting"]],
           widths=[1.7 * inch, 3.6 * inch, 1.7 * inch],
@@ -489,7 +501,8 @@ def build():
         ["Information", "Source 1", "Source 2", "What we do"],
         ["Gender, senior, partner", "yes", "yes (\"Married\")", "Same values. Keep source 1"],
         ["Dependents", "yes / no", "yes / no + count", "551 conflicts. Keep source 1 flag, add the count"],
-        ["Tenure, charges", "yes", "yes", "Match, except the 11 new customers: source 2 fills their blanks"],
+        ["Tenure, charges", "yes", "yes", "Match, except 11 new customers: source 1 says tenure 0 "
+                                           "with a blank total, source 2 says 10 months. Keep source 1"],
         ["Contract", "yes", "yes", "265 conflicts. Keep source 1"],
         ["Payment method", "4 kinds", "3 different kinds", "No clean mapping. Keep source 1"],
         ["Internet", "DSL / fiber / none", "yes/no + DSL / fiber / cable", "Keep source 1, add internet type"],

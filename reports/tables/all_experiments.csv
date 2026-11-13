@@ -1,54 +1,60 @@
-experiment,stage,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model,strategy,setup
-stages,1. raw source 1,0.6263,0.746,0.5143,0.8013,0.8442,0.0228,4500,1125,19,False,False,drop_rows,keep,none,none,ordinal,logreg,,
-stages,2. + cleaning,0.6263,0.7464,0.5143,0.8013,0.8444,0.0226,4507,1126,19,False,False,cross_source,cap_iqr,none,none,ordinal,logreg,,
-stages,3. + transformation,0.6341,0.7574,0.5287,0.7926,0.8499,0.0216,4507,1126,40,False,False,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,
-stages,4. + integration (source 2),0.6811,0.8009,0.5922,0.8013,0.8891,0.0254,4507,1126,1155,True,False,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,
-stages,5. + ETL features,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,
-nulls,,0.697,0.7901,0.6214,0.794,0.8805,0.0345,1616,404,830,True,True,drop_rows,cap_iqr,yeo_johnson,standard,onehot,logreg,drop_rows,
-nulls,,0.6731,0.7954,0.5842,0.794,0.8872,0.0238,4507,1126,1156,True,True,drop_columns,cap_iqr,yeo_johnson,standard,onehot,logreg,drop_columns,
-nulls,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,constant,
-nulls,,0.6778,0.7991,0.5899,0.7967,0.8882,0.0231,4507,1126,1168,True,True,statistical,cap_iqr,yeo_johnson,standard,onehot,logreg,statistical,
-nulls,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,cross_source,
-nulls,,0.6782,0.7993,0.5901,0.7973,0.8881,0.023,4507,1126,1168,True,True,knn,cap_iqr,yeo_johnson,standard,onehot,logreg,knn,
-outliers,,0.679,0.8,0.5913,0.7973,0.8886,0.0233,4507,1126,1168,True,True,cross_source,keep,yeo_johnson,standard,onehot,logreg,keep,
-outliers,,0.6796,0.8065,0.6064,0.7732,0.8859,0.0208,3743,1126,1130,True,True,cross_source,remove_iqr,yeo_johnson,standard,onehot,logreg,remove_iqr,
-outliers,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,cap_iqr,
-outliers,,0.6771,0.7989,0.5898,0.7946,0.888,0.0244,4046,1126,1151,True,True,cross_source,remove_zscore,yeo_johnson,standard,onehot,logreg,remove_zscore,
-outliers,,0.6809,0.8016,0.5939,0.798,0.8887,0.0254,4416,1126,1165,True,True,cross_source,isolation_forest,yeo_johnson,standard,onehot,logreg,isolation_forest,
-normalizers,,0.6761,0.7966,0.5856,0.8,0.8876,0.0215,4507,1126,1168,True,True,cross_source,cap_iqr,none,standard,onehot,logreg,,
-normalizers,,0.6798,0.7985,0.5878,0.806,0.889,0.0236,4507,1126,1168,True,True,cross_source,cap_iqr,log,standard,onehot,logreg,,
-normalizers,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,
-normalizers,,0.6697,0.7927,0.5802,0.792,0.8805,0.025,4507,1126,1168,True,True,cross_source,cap_iqr,quantile,standard,onehot,logreg,,
-scalers,,0.6791,0.7996,0.5904,0.7993,0.8874,0.0231,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,logreg,,none | logreg
-scalers,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,standard | logreg
-scalers,,0.6792,0.7993,0.5898,0.8007,0.8868,0.024,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,logreg,,minmax | logreg
-scalers,,0.6799,0.8003,0.5916,0.7993,0.8878,0.024,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,logreg,,robust | logreg
-scalers,,0.6788,0.7984,0.5878,0.8033,0.8867,0.0232,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,logreg,,maxabs | logreg
-scalers,,0.6806,0.7994,0.5894,0.8054,0.8856,0.0236,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,logreg,,decimal | logreg
-scalers,,0.5147,0.7906,0.6688,0.4187,0.8047,0.0259,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,knn,,none | knn
-scalers,,0.6074,0.8044,0.6506,0.5699,0.848,0.0229,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,knn,,standard | knn
-scalers,,0.6063,0.801,0.6389,0.5773,0.8398,0.021,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,knn,,minmax | knn
-scalers,,0.6102,0.8037,0.6454,0.5793,0.849,0.0141,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,knn,,robust | knn
-scalers,,0.6039,0.7998,0.6363,0.5753,0.8398,0.0267,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,knn,,maxabs | knn
-scalers,,0.6061,0.8,0.6355,0.5799,0.8411,0.0168,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,knn,,decimal | knn
-encoders,,0.6693,0.7852,0.5658,0.8194,0.8856,0.0137,4507,1126,32,True,True,cross_source,cap_iqr,yeo_johnson,standard,drop,logreg,,
-encoders,,0.675,0.7895,0.5717,0.8241,0.8881,0.0197,4507,1126,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,ordinal,logreg,,
-encoders,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,
-encoders,,0.6741,0.789,0.5711,0.8227,0.8878,0.0169,4507,1126,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,frequency,logreg,,
-encoders,,0.6744,0.7897,0.5721,0.8214,0.8879,0.0206,4507,1126,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,target,logreg,,
-models,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,,
-models,,0.6074,0.8044,0.6506,0.5699,0.848,0.0229,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,knn,,
-models,,0.6556,0.7806,0.5619,0.7873,0.866,0.0141,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,random_forest,,
-models,,0.6917,0.8209,0.6372,0.7565,0.8968,0.0169,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,hist_gb,,
-stress,,0.6284,0.7487,0.5172,0.8013,0.8459,0.0266,4507,1126,40,False,False,cross_source,cap_iqr,none,standard,onehot,logreg,,clean data (reference)
-stress,,0.6158,0.7379,0.5006,0.8022,0.836,0.0158,3302,825,40,False,False,drop_rows,keep,none,standard,onehot,logreg,,nulls: drop_rows
-stress,,0.615,0.7336,0.499,0.802,0.8319,0.0103,4507,1126,37,False,False,drop_columns,keep,none,standard,onehot,logreg,,nulls: drop_columns
-stress,,0.6154,0.7352,0.501,0.7987,0.8355,0.0107,4507,1126,40,False,False,constant,keep,none,standard,onehot,logreg,,nulls: constant
-stress,,0.615,0.7355,0.5014,0.796,0.8359,0.0095,4507,1126,40,False,False,statistical,keep,none,standard,onehot,logreg,,nulls: statistical
-stress,,0.6146,0.7359,0.5018,0.794,0.8365,0.0098,4507,1126,40,False,False,cross_source,keep,none,standard,onehot,logreg,,nulls: cross_source
-stress,,0.6125,0.7341,0.4998,0.792,0.8358,0.0082,4507,1126,40,False,False,knn,keep,none,standard,onehot,logreg,,nulls: knn
-stress,,0.6146,0.7359,0.5018,0.794,0.8365,0.0098,4507,1126,40,False,False,cross_source,keep,none,standard,onehot,logreg,,outliers: keep
-stress,,0.6156,0.7451,0.5134,0.7692,0.8291,0.0205,4265,1126,40,False,False,cross_source,remove_iqr,none,standard,onehot,logreg,,outliers: remove_iqr
-stress,,0.6267,0.7476,0.5162,0.7987,0.8426,0.0141,4507,1126,40,False,False,cross_source,cap_iqr,none,standard,onehot,logreg,,outliers: cap_iqr
-stress,,0.6235,0.7458,0.5139,0.7933,0.8363,0.017,4315,1126,40,False,False,cross_source,remove_zscore,none,standard,onehot,logreg,,outliers: remove_zscore
-stress,,0.6199,0.7419,0.509,0.7933,0.8375,0.0123,4416,1126,40,False,False,cross_source,isolation_forest,none,standard,onehot,logreg,,outliers: isolation_forest
+experiment,stage,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model,top_k,strategy,setup,features
+stages,1. raw source 1,0.6263,0.746,0.5143,0.8013,0.8442,0.0228,4500,1125,19,False,False,drop_rows,keep,none,none,ordinal,logreg,0,,,
+stages,2. + cleaning,0.6262,0.7462,0.5141,0.8013,0.8445,0.0227,4507,1126,19,False,False,constant,cap_iqr,none,none,ordinal,logreg,0,,,
+stages,3. + transformation,0.6325,0.7559,0.5268,0.792,0.8496,0.0208,4507,1126,40,False,False,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,
+stages,4. + integration (source 2),0.682,0.8012,0.5926,0.8033,0.8891,0.0244,4507,1126,1155,True,False,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,
+stages,5. + ETL features,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,
+nulls,,0.697,0.7901,0.6214,0.794,0.8805,0.0345,1616,404,830,True,True,drop_rows,cap_iqr,yeo_johnson,standard,onehot,logreg,0,drop_rows,,
+nulls,,0.6731,0.7954,0.5842,0.794,0.8872,0.0238,4507,1126,1156,True,True,drop_columns,cap_iqr,yeo_johnson,standard,onehot,logreg,0,drop_columns,,
+nulls,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,constant,,
+nulls,,0.6778,0.7991,0.5899,0.7967,0.8882,0.0231,4507,1126,1168,True,True,statistical,cap_iqr,yeo_johnson,standard,onehot,logreg,0,statistical,,
+nulls,,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,0,cross_source,,
+nulls,,0.6782,0.7993,0.5901,0.7973,0.8881,0.023,4507,1126,1168,True,True,knn,cap_iqr,yeo_johnson,standard,onehot,logreg,0,knn,,
+outliers,,0.6794,0.8003,0.5919,0.7973,0.8886,0.0238,4507,1126,1168,True,True,constant,keep,yeo_johnson,standard,onehot,logreg,0,keep,,
+outliers,,0.6802,0.8064,0.6057,0.7759,0.8859,0.0204,3743,1126,1130,True,True,constant,remove_iqr,yeo_johnson,standard,onehot,logreg,0,remove_iqr,,
+outliers,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,cap_iqr,,
+outliers,,0.6782,0.7994,0.5904,0.7967,0.888,0.0235,4046,1126,1151,True,True,constant,remove_zscore,yeo_johnson,standard,onehot,logreg,0,remove_zscore,,
+outliers,,0.6806,0.8014,0.5937,0.7973,0.8889,0.0259,4416,1126,1165,True,True,constant,isolation_forest,yeo_johnson,standard,onehot,logreg,0,isolation_forest,,
+normalizers,,0.6771,0.7973,0.5867,0.8007,0.8876,0.0206,4507,1126,1168,True,True,constant,cap_iqr,none,standard,onehot,logreg,0,,,
+normalizers,,0.6796,0.7982,0.5872,0.8067,0.8892,0.0231,4507,1126,1168,True,True,constant,cap_iqr,log,standard,onehot,logreg,0,,,
+normalizers,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,
+normalizers,,0.669,0.7918,0.5788,0.7926,0.8806,0.0253,4507,1126,1168,True,True,constant,cap_iqr,quantile,standard,onehot,logreg,0,,,
+scalers,,0.6811,0.8005,0.5913,0.8033,0.8876,0.0228,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,none,onehot,logreg,0,,none | logreg,
+scalers,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,standard | logreg,
+scalers,,0.6792,0.7989,0.5891,0.802,0.8868,0.0233,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,minmax,onehot,logreg,0,,minmax | logreg,
+scalers,,0.6806,0.8007,0.592,0.8007,0.8879,0.0232,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,robust,onehot,logreg,0,,robust | logreg,
+scalers,,0.6792,0.7987,0.5884,0.8033,0.8866,0.0219,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,maxabs,onehot,logreg,0,,maxabs | logreg,
+scalers,,0.6807,0.7993,0.5889,0.8067,0.8856,0.0235,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,decimal,onehot,logreg,0,,decimal | logreg,
+scalers,,0.5141,0.7904,0.6684,0.4181,0.8045,0.0259,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,none,onehot,knn,0,,none | knn,
+scalers,,0.6085,0.8046,0.6505,0.5719,0.8474,0.0208,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,knn,0,,standard | knn,
+scalers,,0.6064,0.8014,0.64,0.5766,0.8396,0.0232,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,minmax,onehot,knn,0,,minmax | knn,
+scalers,,0.6112,0.8042,0.6467,0.5799,0.849,0.0138,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,robust,onehot,knn,0,,robust | knn,
+scalers,,0.6043,0.8003,0.6378,0.5746,0.8398,0.0236,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,maxabs,onehot,knn,0,,maxabs | knn,
+scalers,,0.6061,0.8,0.6355,0.5799,0.8411,0.0168,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,decimal,onehot,knn,0,,decimal | knn,
+encoders,,0.6695,0.7849,0.5651,0.8214,0.8857,0.0156,4507,1126,32,True,True,constant,cap_iqr,yeo_johnson,standard,drop,logreg,0,,,
+encoders,,0.6755,0.7897,0.5718,0.8254,0.8881,0.0197,4507,1126,47,True,True,constant,cap_iqr,yeo_johnson,standard,ordinal,logreg,0,,,
+encoders,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,
+encoders,,0.675,0.7897,0.5721,0.8234,0.8878,0.0164,4507,1126,47,True,True,constant,cap_iqr,yeo_johnson,standard,frequency,logreg,0,,,
+encoders,,0.678,0.7922,0.5754,0.8254,0.8878,0.0185,4507,1126,47,True,True,constant,cap_iqr,yeo_johnson,standard,target,logreg,0,,,
+models,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,
+models,,0.6085,0.8046,0.6505,0.5719,0.8474,0.0208,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,knn,0,,,
+models,,0.6573,0.7819,0.5636,0.7886,0.8658,0.0142,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,random_forest,0,,,
+models,,0.696,0.8245,0.6442,0.7572,0.8967,0.0184,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,hist_gb,0,,,
+feature_selection,,0.5814,0.7043,0.466,0.7732,0.7908,0.0184,4507,1126,1096,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,5,,,top 5
+feature_selection,,0.6288,0.7591,0.5319,0.7692,0.8428,0.0201,4507,1126,1110,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,10,,,top 10
+feature_selection,,0.633,0.7639,0.5388,0.7672,0.8477,0.0134,4507,1126,1123,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,15,,,top 15
+feature_selection,,0.6382,0.7691,0.5463,0.7672,0.8528,0.0125,4507,1126,1130,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,20,,,top 20
+feature_selection,,0.642,0.7723,0.5506,0.7699,0.8594,0.0182,4507,1126,1149,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,30,,,top 30
+feature_selection,,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,,,all
+stress,,0.6293,0.7492,0.5178,0.8027,0.846,0.0249,4507,1126,40,False,False,constant,cap_iqr,none,standard,onehot,logreg,0,,clean data (reference),
+stress,,0.6158,0.7379,0.5006,0.8022,0.836,0.0158,3302,825,40,False,False,drop_rows,keep,none,standard,onehot,logreg,0,,nulls: drop_rows,
+stress,,0.615,0.7336,0.499,0.802,0.8319,0.0103,4507,1126,37,False,False,drop_columns,keep,none,standard,onehot,logreg,0,,nulls: drop_columns,
+stress,,0.6154,0.7352,0.501,0.7987,0.8355,0.0107,4507,1126,40,False,False,constant,keep,none,standard,onehot,logreg,0,,nulls: constant,
+stress,,0.615,0.7355,0.5014,0.796,0.8359,0.0095,4507,1126,40,False,False,statistical,keep,none,standard,onehot,logreg,0,,nulls: statistical,
+stress,,0.6146,0.7359,0.5018,0.794,0.8365,0.0098,4507,1126,40,False,False,cross_source,keep,none,standard,onehot,logreg,0,,nulls: cross_source,
+stress,,0.6125,0.7341,0.4998,0.792,0.8358,0.0082,4507,1126,40,False,False,knn,keep,none,standard,onehot,logreg,0,,nulls: knn,
+stress,,0.6154,0.7352,0.501,0.7987,0.8355,0.0107,4507,1126,40,False,False,constant,keep,none,standard,onehot,logreg,0,,outliers: keep,
+stress,,0.6173,0.7462,0.5146,0.7719,0.8329,0.0215,4263,1126,40,False,False,constant,remove_iqr,none,standard,onehot,logreg,0,,outliers: remove_iqr,
+stress,,0.6221,0.7423,0.5094,0.8,0.8409,0.017,4507,1126,40,False,False,constant,cap_iqr,none,standard,onehot,logreg,0,,outliers: cap_iqr,
+stress,,0.6216,0.7442,0.512,0.792,0.8356,0.015,4314,1126,40,False,False,constant,remove_zscore,none,standard,onehot,logreg,0,,outliers: remove_zscore,
+stress,,0.6179,0.7391,0.5055,0.7953,0.8369,0.0135,4416,1126,40,False,False,constant,isolation_forest,none,standard,onehot,logreg,0,,outliers: isolation_forest,

@@ -1,6 +1,7 @@
 """Column groups used by the model, and the ETL step that builds new features."""
 import numpy as np
 import pandas as pd
+from sklearn.feature_selection import mutual_info_classif
 
 # Source 1 columns (what we had in Phase 1).
 S1_BINARY = ["senior_citizen", "partner", "dependents", "phone_service", "paperless_billing"]
@@ -52,6 +53,17 @@ def columns(use_source2=True, use_engineered=True):
         numeric += ENG_NUMERIC
         categorical += ENG_CATEGORICAL
     return binary, numeric, categorical
+
+
+def rank_features(df, binary, numeric, categorical, target):
+    """Mutual information of each feature with the target (a filter method).
+    Higher means the feature tells us more about churn."""
+    X = df[binary + numeric + categorical].copy()
+    for col in categorical:
+        X[col] = X[col].astype("category").cat.codes
+    discrete = [c in binary or c in categorical for c in X.columns]
+    mi = mutual_info_classif(X, df[target], discrete_features=discrete, random_state=42)
+    return pd.Series(mi, index=X.columns).sort_values(ascending=False)
 
 
 def present(cols, df):

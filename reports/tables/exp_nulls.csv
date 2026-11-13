@@ -1,7 +1,7 @@
-experiment,strategy,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
-nulls,drop_rows,0.697,0.7901,0.6214,0.794,0.8805,0.0345,1616,404,830,True,True,drop_rows,cap_iqr,yeo_johnson,standard,onehot,logreg
-nulls,drop_columns,0.6731,0.7954,0.5842,0.794,0.8872,0.0238,4507,1126,1156,True,True,drop_columns,cap_iqr,yeo_johnson,standard,onehot,logreg
-nulls,constant,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg
-nulls,statistical,0.6778,0.7991,0.5899,0.7967,0.8882,0.0231,4507,1126,1168,True,True,statistical,cap_iqr,yeo_johnson,standard,onehot,logreg
-nulls,cross_source,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
-nulls,knn,0.6782,0.7993,0.5901,0.7973,0.8881,0.023,4507,1126,1168,True,True,knn,cap_iqr,yeo_johnson,standard,onehot,logreg
+experiment,strategy,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model,top_k
+nulls,drop_rows,0.697,0.7901,0.6214,0.794,0.8805,0.0345,1616,404,830,True,True,drop_rows,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+nulls,drop_columns,0.6731,0.7954,0.5842,0.794,0.8872,0.0238,4507,1126,1156,True,True,drop_columns,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+nulls,constant,0.6792,0.8001,0.5916,0.7973,0.8883,0.0241,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+nulls,statistical,0.6778,0.7991,0.5899,0.7967,0.8882,0.0231,4507,1126,1168,True,True,statistical,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+nulls,cross_source,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg,0
+nulls,knn,0.6782,0.7993,0.5901,0.7973,0.8881,0.023,4507,1126,1168,True,True,knn,cap_iqr,yeo_johnson,standard,onehot,logreg,0

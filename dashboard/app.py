@@ -74,7 +74,7 @@ with overview:
     st.dataframe(at_risk.sort_values("churn_probability", ascending=False)
                  [["customer_id", "city", "contract", "tenure", "monthly_charges",
                    "number_of_referrals", "churn_probability"]].head(25),
-                 hide_index=True, use_container_width=True)
+                 hide_index=True)
 
 with drivers:
     st.subheader("Churn rate by group")
@@ -86,49 +86,52 @@ with drivers:
     rates["churn_rate"] = (rates["churn_rate"] * 100).round(1)
     left, right = st.columns([2, 1])
     left.bar_chart(rates["churn_rate"], y_label="Churn rate (%)")
-    right.dataframe(rates, use_container_width=True)
+    right.dataframe(rates)
 
     st.subheader("Monthly charge vs tenure")
     st.scatter_chart(view.sample(min(len(view), 2000), random_state=1),
                      x="tenure", y="monthly_charges", color="churn")
 
     st.subheader("Feature ranking (mutual information with churn)")
-    st.dataframe(table("feature_ranking"), hide_index=True, use_container_width=True)
+    st.dataframe(table("feature_ranking"), hide_index=True)
 
 with quality:
     st.subheader("Datasets")
-    st.dataframe(table("dataset_stats"), hide_index=True, use_container_width=True)
+    st.dataframe(table("dataset_stats"), hide_index=True)
     c1, c2 = st.columns(2)
     c1.subheader("Conflicts between the two sources")
-    c1.dataframe(table("integration_conflicts"), hide_index=True, use_container_width=True)
+    c1.dataframe(table("integration_conflicts"), hide_index=True)
     c2.subheader("Payment method: no one-to-one mapping")
-    c2.dataframe(table("payment_method_crosswalk"), hide_index=True, use_container_width=True)
+    c2.dataframe(table("payment_method_crosswalk"), hide_index=True)
+    st.subheader("Entity resolution: matching the sources without the customer ID")
+    st.dataframe(table("entity_resolution"), hide_index=True)
     st.subheader("Functional dependencies")
-    st.dataframe(table("functional_dependencies"), hide_index=True, use_container_width=True)
-    st.dataframe(table("conditional_dependencies"), hide_index=True, use_container_width=True)
+    st.dataframe(table("functional_dependencies"), hide_index=True)
+    st.dataframe(table("conditional_dependencies"), hide_index=True)
     c3, c4 = st.columns(2)
     c3.subheader("Nulls")
-    c3.dataframe(table("null_report"), hide_index=True, use_container_width=True)
-    c3.dataframe(table("null_fill_examples"), hide_index=True, use_container_width=True)
+    c3.dataframe(table("null_report"), hide_index=True)
+    c3.dataframe(table("null_fill_examples"), hide_index=True)
     c4.subheader("Outliers (IQR and z-score)")
-    c4.dataframe(table("outlier_report"), hide_index=True, use_container_width=True)
+    c4.dataframe(table("outlier_report"), hide_index=True)
 
 with results:
     st.subheader("F1 as each stage of the project is added")
     stages = table("exp_stages").set_index("stage")
     st.bar_chart(stages["f1"], y_label="F1", horizontal=True)
 
-    name = st.selectbox("Experiment", ["nulls", "outliers", "normalizers", "scalers",
-                                       "encoders", "models", "stress"])
+    name = st.selectbox("Experiment", ["nulls", "outliers", "normalizers", "scalers", "encoders",
+                                       "feature_selection", "models", "stress"])
     exp = table(f"exp_{name}")
     label = exp.columns[1]
     st.bar_chart(exp.set_index(label)["f1"], y_label="F1", horizontal=True)
     st.dataframe(exp[[label, "f1", "f1_std", "accuracy", "precision", "recall", "roc_auc",
                       "train_rows", "test_rows", "n_features"]],
-                 hide_index=True, use_container_width=True)
+                 hide_index=True)
     if name == "nulls":
-        st.info("drop_rows looks best only because it also deletes 65% of the test rows "
-                "(every customer without an offer). It cannot score those customers at all.")
+        st.info("drop_rows looks best only because it also deletes about two thirds of the "
+                "rows it is graded on (every customer without an offer). It cannot score "
+                "those customers at all.")
 
     st.subheader("Final model on a 20% hold-out set")
     st.dataframe(table("final_model_metrics"), hide_index=True)

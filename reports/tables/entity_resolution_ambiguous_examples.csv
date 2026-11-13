@@ -1,0 +1,7 @@
+customer_id_s1,customer_id_s2,monthly_charges,tenure_s1,tenure_s2,contract_s1,contract_s2,score
+0248-IPDFW,0248-IPDFW,50.1,1,1,Month-to-month,Month-to-month,1.0
+0248-IPDFW,4749-VFKVB,50.1,1,1,Month-to-month,Month-to-month,1.0
+0328-GRPMV,0328-GRPMV,70.1,1,1,Month-to-month,Month-to-month,1.0
+0328-GRPMV,4702-IOQDC,70.1,1,1,Month-to-month,Month-to-month,1.0
+0426-TIRNE,0426-TIRNE,20.9,1,1,Month-to-month,Month-to-month,1.0
+0426-TIRNE,7243-LCGGZ,20.9,1,1,Month-to-month,Month-to-month,1.0

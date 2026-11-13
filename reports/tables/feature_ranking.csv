@@ -14,8 +14,8 @@ total_long_distance_charges,0.048,source 2
 is_fiber,0.0478,ETL (engineered)
 monthly_charges,0.0476,source 1
 online_backup,0.0468,source 1
+total_charges,0.0446,source 1
 payment_method,0.0445,source 1
-total_charges,0.044,source 1
 device_protection,0.0439,source 1
 is_new_customer,0.0435,ETL (engineered)
 total_revenue,0.0404,source 2
@@ -43,6 +43,6 @@ revenue_per_month,0.0017,ETL (engineered)
 streaming_music,0.001,source 2
 multiple_lines,0.0008,source 1
 phone_service,0.0001,source 1
-total_refunds,0.0,source 2
-avg_monthly_long_distance_charges,0.0,source 2
 gender,0.0,source 1
+avg_monthly_long_distance_charges,0.0,source 2
+total_refunds,0.0,source 2

@@ -1,5 +1,5 @@
 experiment,model,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder
-models,logreg,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
-models,knn,0.6102,0.8036,0.6446,0.5794,0.8503,0.0301,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
-models,random_forest,0.6555,0.7819,0.5645,0.7817,0.8657,0.0146,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
-models,hist_gb,0.7028,0.8254,0.6407,0.7785,0.9017,0.0153,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
+models,logreg,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
+models,knn,0.6074,0.8044,0.6506,0.5699,0.848,0.0229,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
+models,random_forest,0.6556,0.7806,0.5619,0.7873,0.866,0.0141,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot
+models,hist_gb,0.6917,0.8209,0.6372,0.7565,0.8968,0.0169,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot

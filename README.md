@@ -16,10 +16,13 @@ transformation, ETL feature building, a Delta Lake store, a model and a dashboar
 
 ## How to run
 
+Full step-by-step setup for a new machine (Windows and Mac) is on the last page of
+`explanation/project_explainer.pdf`. Short version:
+
 ```bash
 pip install -r requirements.txt
 python scripts/split_phase1.py        # rebuilds the 3 Phase 1 CSVs (already in the repo)
-python -m src.pipeline                # full run, about 8 minutes
+python -m src.pipeline                # full run, about 6 minutes
 python -m src.pipeline --skip-experiments   # quick run, under 1 minute
 streamlit run dashboard/app.py        # the dashboard
 ```
@@ -46,34 +49,49 @@ raw files ──ingest──> bronze (8 tables, as-is)
 | `src/transform.py` | 6 scalers (incl. decimal scaling), 4 normalizers, 5 encoders |
 | `src/features.py` | Column groups and the ETL features (add-on count, charge per service, tenure band, ...) |
 | `src/etl.py` | Builds the clean silver and gold tables, mutual information feature ranking |
-| `src/experiments.py` | 5-fold CV for every setup; one setting changed at a time |
-| `src/train.py` / `src/predict.py` | Final model, hold-out evaluation, saved model, scoring |
+| `src/experiments.py` | Locks a 20% test set, then 5-fold CV for every setup; one setting changed at a time |
+| `src/train.py` / `src/predict.py` | Final model, graded once on the locked test set, saved model, scoring |
 | `src/lake.py` | Delta Lake bronze / silver / gold layers with time travel, SQLite warehouse |
 | `src/figures.py` | Slide charts in `reports/figures` |
 | `dashboard/app.py` | Streamlit dashboard with filters, map, data quality, results, live prediction |
 
-## Main results (5-fold CV, churn-class F1)
+## How we evaluate
+
+Before any experiment, 20% of customers (1,409) are locked away as the **test set**.
+Every choice (cleaning, scaling, encoding, model) is made with 5-fold cross-validation
+on the other 80% (5,634 customers, the **development set**). The test set is used once,
+in `src/train.py`, to grade the final model.
+
+## Main results (churn-class F1)
+
+Cross-validation on the development set:
 
 | Stage | F1 | ROC-AUC |
 |---|---|---|
 | 1. Raw source 1 (drop null rows, no scaling, integer codes) | 0.626 | 0.844 |
 | 2. + cleaning | 0.626 | 0.844 |
-| 3. + transformation | 0.632 | 0.849 |
-| 4. + integration of source 2 | 0.679 | 0.891 |
-| 5. + ETL features | 0.680 | 0.890 |
-| Final model: gradient boosting on stage 5 | **0.703** | **0.902** |
+| 3. + transformation | 0.634 | 0.850 |
+| 4. + integration of source 2 | 0.681 | 0.889 |
+| 5. + ETL features | 0.678 | 0.888 |
+| Final model: gradient boosting on stage 5 | **0.692** | **0.897** |
+
+On the locked test set the final model scores **F1 0.684, ROC-AUC 0.898**. It catches 286 of
+the 374 customers who left, and 62% of its warnings are correct.
 
 What the experiments show:
 
 - **Integration** gives the biggest gain. Source 2 adds referrals, dependants count, age and location.
 - **Cleaning** barely changes F1 on the real data: only 11 cells were blank. On a copy with
-  simulated damage (10% blanks, 3% typos), F1 falls from 0.626 to 0.609. Imputing and IQR
-  capping bring it back to 0.619. Dropping rows instead throws away 26% of the test customers.
-- **Dropping rows with nulls** looks best on the real data (0.701), but only because it deletes
-  65% of the test set (every customer without an offer). Those customers can't be scored at all.
-- **Scaling** barely matters for logistic regression but matters a lot for KNN (0.504 -> 0.612).
-- **One-hot encoding** beats ordinal, frequency and target encoding, and all of them beat
+  simulated damage (10% blanks, 3% typos), F1 falls from 0.628 to 0.616. Imputing and IQR
+  capping bring it back to 0.627. Dropping rows instead throws away 27% of the test customers.
+- **Dropping rows with nulls** looks best on the real data (0.697), but only because it deletes
+  64% of the customers it is graded on (every customer without an offer). Those customers
+  can't be scored at all.
+- **Scaling** barely matters for logistic regression but matters a lot for KNN (0.515 -> 0.607).
+- **One-hot encoding** edges out ordinal, frequency and target encoding, and all of them beat
   dropping the categorical columns.
+- For cleaning, scaling and encoding the options are within 0.01 F1 of each other, which is
+  inside the fold-to-fold noise, so we picked the option that fits the data best.
 
 All numbers come from `reports/tables/`. The pipeline rewrites them on every run.
 

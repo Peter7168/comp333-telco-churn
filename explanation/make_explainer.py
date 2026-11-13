@@ -44,6 +44,7 @@ LINE = colors.HexColor("#d9d8d4")
 FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
 pdfmetrics.registerFont(TTFont("Body", str(FONT_DIR / "DejaVuSans.ttf")))
 pdfmetrics.registerFont(TTFont("Bold", str(FONT_DIR / "DejaVuSans-Bold.ttf")))
+pdfmetrics.registerFont(TTFont("Mono", str(FONT_DIR / "DejaVuSansMono.ttf")))
 # I link the two so <b> inside a paragraph switches to the bold file.
 registerFontFamily("Body", normal="Body", bold="Bold", italic="Body", boldItalic="Bold")
 
@@ -296,10 +297,10 @@ def step_examples(ex):
           widths=[2.6 * inch, 1.7 * inch, 2.7 * inch])
 
     block("Step 6. Test every choice", "experiments.py",
-          "For each step we try several options and keep everything else the same. Each option "
-          "is trained on 80% of customers and graded on the other 20%, five times over, so "
-          "every customer is graded once.",
-          [["We compared", "Options", "Winner"],
+          "For each step we try several options and keep everything else the same, then keep "
+          "the option with the best score. All of this happens on the development set only "
+          "(see \"Training, validation and test sets\" below).",
+          [["We compared", "Options", "We kept"],
            ["Ways to fill blanks", "6 (delete rows, delete columns, 0, median, copy from source 2, "
                                    "nearest neighbours)", "copy from source 2"],
            ["Ways to handle extremes", "5 (keep, remove, cap, z-score, Isolation Forest)", "cap"],
@@ -307,7 +308,11 @@ def step_examples(ex):
            ["Ways to encode text", "5 encoders", "one-hot"],
            ["Models", "4 (logistic regression, KNN, random forest, gradient boosting)",
             "gradient boosting"]],
-          widths=[1.7 * inch, 3.6 * inch, 1.7 * inch])
+          widths=[1.7 * inch, 3.6 * inch, 1.7 * inch],
+          note="For cleaning, scaling and encoding the options score within 0.01 of each other, "
+               "which is smaller than the normal ups and downs between runs. There we kept the "
+               "option that makes the most sense for the data (e.g. a blank offer really means "
+               "\"no offer\"). For models the gap is clear, so we took the best one.")
 
     block("Step 7. Predict and show", "train.py, predict.py, dashboard/app.py",
           "The final model gives every customer a chance of leaving. The dashboard shows "
@@ -367,15 +372,61 @@ def build():
         ["What do we predict?", "<b>Churn</b>: did the customer cancel? (Yes = 1, No = 0)"],
         ["What kind of task?", "<b>Binary classification</b>: the answer is a category, not a number"],
         ["Input", "One row per customer: contract, services, charges, age, location, ..."],
-        ["How we score it", "<b>F1 score</b> on the churn class, plus ROC-AUC. We don't use plain "
-                            "accuracy because only 26.5% churn: a model that always says \"stays\" "
-                            "would already be 73.5% accurate and useless."],
+        ["Model", f"<b>{MODEL_NAMES.get(best, best).capitalize()}</b> (explained further down)"],
+        ["How we judge it", "How many of the leavers it catches, and how often its warnings "
+                            "are right (explained right below)"],
     ], [1.6 * inch, 5.4 * inch]))
+
+    # ---------- how we judge the model ----------
+    leavers = int(final["tp"] + final["fn"])
+    stayers = int(final["tn"] + final["fp"])
+    flagged = int(final["tp"] + final["fp"])
+    s.append(KeepTogether([
+        p("How we judge the model, with real numbers", H2),
+        p(f"We hid {int(final['test_rows']):,} customers from the model, asked it to predict "
+          f"each one, then compared with what really happened. {leavers} of them left and "
+          f"{stayers} stayed. Every prediction lands in one of four boxes:"),
+        table([
+            ["", "Model said \"will leave\"", "Model said \"will stay\""],
+            [f"<b>Really left</b> ({leavers})",
+             f"<b>{int(final['tp'])} caught</b> ✓", f"<b>{int(final['fn'])} missed</b> ✗"],
+            [f"<b>Really stayed</b> ({stayers})",
+             f"<b>{int(final['fp'])} false alarms</b> ✗", f"<b>{int(final['tn'])} correctly left alone</b> ✓"],
+        ], [2.0 * inch, 2.5 * inch, 2.5 * inch]),
+        Spacer(1, 6),
+    ]))
+    s.extend(bullets([
+        f"<b>Recall: how many leavers do we catch?</b> {int(final['tp'])} of {leavers} = "
+        f"{final['tp'] / leavers:.0%}. Missing a leaver means losing a customer.",
+        f"<b>Precision: when we warn, are we right?</b> {int(final['tp'])} of {flagged} warnings = "
+        f"{final['tp'] / flagged:.0%}. A false alarm means giving a discount to someone who "
+        "would have stayed anyway.",
+        f"<b>F1 score</b> combines the two into one number from 0 to 1. Ours is "
+        f"<b>{final['f1']:.2f}</b>. It only gets high if <i>both</i> are good, so it is the "
+        "main number in all our charts.",
+        f"<b>ROC-AUC</b> ({final['roc_auc']:.2f}): pick one customer who left and one who stayed "
+        f"at random. {final['roc_auc']:.0%} of the time, the model gives the leaver the higher "
+        "risk score. 0.5 would be a coin flip, 1.0 perfect.",
+        "<b>Why not just accuracy (% of correct predictions)?</b> Because 73.5% of customers "
+        "stay. A lazy model that says \"everyone stays\" would be 73.5% accurate while "
+        "catching zero leavers. Accuracy hides that; F1 doesn't.",
+    ]))
 
     s.append(p("The data", H2))
     s.append(p("Both sources describe the same 7,043 fictional customers of a California telecom, "
                "but they were published separately by IBM with different column names, formats "
                "and some disagreeing values. That is what makes integration a real problem."))
+    s.append(callout(
+        "<b>Why two sources about the same customers?</b> Each file is about the same people "
+        "but holds <b>different facts</b> about them. Think of a student: the registrar knows "
+        "their courses and grades, the library knows what they borrow, the gym knows how often "
+        "they go. Same student, three systems. Companies work the same way: billing, the "
+        "customer database and the network each keep their own records. Joining them gives "
+        "the model more to learn from. Source 1 alone doesn't know a customer's age, how many "
+        "friends they referred or where they live; source 2 does, and those turned out to be "
+        "some of the best clues. The course also asks us to integrate several sources, and "
+        "matching customers whose records disagree is exactly that skill."))
+    s.append(Spacer(1, 6))
     s.append(table([
         ["Source", "Files", "Rows"],
         ["<b>1. IBM sample on GitHub</b> (CSV)",
@@ -460,6 +511,61 @@ def build():
                "actual data and code."))
     s.extend(step_examples(examples()))
 
+    # ---------- the model ----------
+    s.append(KeepTogether([
+        p("The prediction model", H2),
+        p(f"We use <b>gradient boosting</b> (scikit-learn's HistGradientBoostingClassifier). In "
+          "plain words: it builds a long chain of small <b>decision trees</b>. A decision tree is "
+          "a flowchart of yes/no questions, for example \"Is the contract month-to-month?\" → "
+          "\"Has the customer been here less than a year?\" → \"Did they refer any friends?\". "
+          "One tree on its own is a rough guess. Each new tree in the chain looks at the "
+          "customers the previous trees got wrong and tries to fix those mistakes. After 100 "
+          "trees the combined answer is a percentage: the chance this customer leaves. Above "
+          "50% we call it \"will leave\"."),
+        p("Because only about 1 in 4 customers leave, we tell the model to treat each leaver as "
+          "more important during training (\"balanced\" class weights). Otherwise it would learn "
+          "that saying \"stays\" is almost always safe."),
+        table([["Model we tried", "How it decides (simplified)", "Score (F1)"]] + [
+            [MODEL_NAMES.get(m, m).capitalize(), desc, f"{models.loc[m, 'f1']:.2f}"]
+            for m, desc in [
+                ("hist_gb", "Chain of small decision trees, each fixing the last one's mistakes"),
+                ("logreg", "Adds up points for each feature, turns the total into a %"),
+                ("random_forest", "Hundreds of independent decision trees vote"),
+                ("knn", "Looks at the 25 most similar customers and copies what they did"),
+            ]], [1.8 * inch, 4.2 * inch, 1.0 * inch]),
+    ]))
+
+    # ---------- train / validation / test ----------
+    n_total = int(stats.loc[stats["file"] == "customer_profiles.csv", "rows"].iloc[0])
+    n_test = int(final["test_rows"])
+    n_dev = n_total - n_test
+    s.append(KeepTogether([
+        p("Training, validation and test sets", H2),
+        p("Yes, we use all three. The rule is simple: <b>the model is never graded on customers "
+          "it learned from</b>, the same way a teacher doesn't put the practice questions on the "
+          "final exam."),
+        table([
+            ["Set", "Customers", "What it is used for"],
+            ["<b>Test set</b> (the final exam)", f"{n_test:,} (20%)",
+             "Locked away on day one. Used <b>only once</b>, to grade the finished model. "
+             "Every number in \"How we judge the model\" comes from here."],
+            ["<b>Development set</b>", f"{n_dev:,} (80%)",
+             "Everything else: all experiments and the choice of model happen here."],
+            ["  ↳ training folds", f"about {n_dev * 4 // 5:,} at a time",
+             "The model learns from these."],
+            ["  ↳ validation fold", f"about {n_dev // 5:,} at a time",
+             "The model is graded on these to compare options."],
+        ], [2.0 * inch, 1.5 * inch, 3.5 * inch]),
+        Spacer(1, 4),
+        p("The development set is cut into 5 equal parts. We train on 4 parts and grade on the "
+          "5th, then rotate until every part has been the validation part once, and average the "
+          "5 scores. This is called <b>5-fold cross-validation</b>. It gives a steadier score "
+          "than one single split, because no single lucky or unlucky split decides anything."),
+        p(f"Check: the final model scored F1 {models.loc[best, 'f1']:.2f} in cross-validation and "
+          f"{final['f1']:.2f} on the locked test set. The two are close, which means our "
+          "experiments did not fool us.", SMALL),
+    ]))
+
     s.append(KeepTogether([p("Three decisions worth knowing", H2)] + bullets([
         "<b>Source 1 wins conflicts.</b> When the sources disagree (e.g. contract type for 265 "
         "customers), we keep source 1, because the Phase 1 work and the churn label are built "
@@ -491,17 +597,21 @@ def build():
         f"<b>The model works.</b> We tested it on {int(final['test_rows']):,} customers it had "
         f"never seen. {leavers} of them really left. The model caught <b>{int(final['tp'])} of "
         f"those {leavers}</b> (about {round(caught * 10)} in 10). When it warned about a customer, "
-        f"it was right about {round(right * 10)} times in 10. Guessing would catch far fewer.",
+        f"it was right about {round(right * 10)} times in 10. A random guess would be right "
+        "only about 1 time in 4.",
         f"<b>The second source mattered most.</b> Adding it improved the model's score from "
         f"{stages['f1'].iloc[2]:.2f} to {stages['f1'].iloc[3]:.2f} (on a scale where 1 is perfect). "
         "Things like referrals and number of dependants only exist in source 2.",
         "<b>Cleaning had little to fix in our data</b> (only 11 blank cells), so it barely "
         "changed the score. To prove cleaning still matters, we damaged a copy of the data on "
-        "purpose (blanks and typos): the score dropped, and our cleaning won back about half "
-        "of the loss.",
+        "purpose (10% blanks and 3% typos): the score dropped from "
+        f"{stress.loc['clean data (reference)', 'f1']:.3f} to "
+        f"{stress.loc['nulls: drop_rows', 'f1']:.3f}, and our cleaning brought it back to "
+        f"{stress.loc['outliers: cap_iqr', 'f1']:.3f}.",
         f"<b>Deleting incomplete rows is a trap.</b> It looks like the best option, but only "
         f"because it throws away {1 - drop['test_rows'] / nulls['test_rows'].max():.0%} of the "
-        "customers. A company can't ignore 2 in 3 customers, so we fill the blanks instead.",
+        "customers. A company can't ignore most of its customers, so we fill the blanks "
+        "instead.",
         "<b>Putting numbers on the same scale</b> doesn't change much for some models but is "
         f"essential for others: one model's score jumped from "
         f"{scalers.loc['none | knn', 'f1']:.2f} to {scalers.loc['standard | knn', 'f1']:.2f}.",
@@ -525,25 +635,78 @@ def build():
         ["docs/", "ERD and the presentation plan"],
     ], [1.8 * inch, 5.2 * inch])]))
 
-    s.append(KeepTogether([p("Try it", H2), table([
-        ["Command", "What it does"],
-        ["pip install -r requirements.txt", "Installs pandas, scikit-learn, deltalake, streamlit, ..."],
-        ["python -m src.pipeline", "Runs everything (about 8 minutes; add --skip-experiments for 1 minute)"],
-        ["streamlit run dashboard/app.py", "Opens the dashboard in your browser"],
-    ], [2.6 * inch, 4.4 * inch])]))
-
     s.append(KeepTogether([p("Words you will hear", H2), table([
         ["Term", "Meaning"],
         ["Churn", "A customer cancelling their service"],
         ["F1 score", "Balance of precision (flagged customers who really leave) and recall "
                      "(leavers we catch). 1.0 is perfect"],
-        ["Cross-validation", "Split the data into 5 parts, train on 4, test on 1, repeat 5 times, "
+        ["Cross-validation", "Split the development set into 5 parts, train on 4, grade on 1, repeat 5 times, "
                              "and average the scores"],
         ["IQR outlier", "A value far outside the middle 50% of the data (beyond 1.5 × IQR)"],
         ["One-hot encoding", "Turn a text column like Contract into one 0/1 column per value"],
         ["Delta Lake", "A data lake format that versions tables, so we can read any earlier copy"],
         ["Functional dependency", "X → Y: knowing X always tells you Y (zip code → city)"],
     ], [1.6 * inch, 5.4 * inch])]))
+
+    # ---------- setup on a new machine ----------
+    CODE = ParagraphStyle("code", parent=CELL, fontName="Mono", fontSize=8.5, leading=11.5)
+    def cmd(text):
+        return Paragraph(text.replace("\n", "<br/>"), CODE)
+    s.append(PageBreak())
+    s.append(p("Run it on a brand-new computer", H2))
+    s.append(p("These steps work on Windows, Mac and Linux. Type the commands in a terminal: "
+               "<b>PowerShell</b> on Windows, <b>Terminal</b> on Mac. Where Windows and Mac "
+               "differ, both are shown."))
+    rows = [
+        ["Step", "Do this", "Command"],
+        ["1. Install Python", "Download Python 3.11 or newer from python.org. On Windows, tick "
+                              "<b>\"Add Python to PATH\"</b> in the installer.",
+         cmd("python --version\n(should print 3.11 or higher;\non Mac use python3)")],
+        ["2. Install Git", "Download from git-scm.com and install with the default options.",
+         cmd("git --version")],
+        ["3. Get the project", "Copy the repository to your computer and go into its folder.",
+         cmd("git clone https://github.com/Peter7168/comp333-telco-churn.git\ncd comp333-telco-churn")],
+        ["4. Make a virtual environment", "A private folder for this project's libraries, so "
+                                          "nothing clashes with other projects.",
+         cmd("Windows:\npython -m venv .venv\n.venv\\Scripts\\activate\n\nMac / Linux:\npython3 -m venv .venv\nsource .venv/bin/activate")],
+        ["5. Install the libraries", "pandas, scikit-learn, Delta Lake, Streamlit and the rest. "
+                                     "Takes 1 to 3 minutes.",
+         cmd("pip install -r requirements.txt")],
+        ["6. Run the pipeline", "Builds the data lake, runs every experiment, trains the model "
+                                "and draws the charts. About 6 minutes. The first line should say "
+                                "<b>storage: Delta Lake</b>.",
+         cmd("python -m src.pipeline\n\nQuick version (1 min, skips\nthe experiments):\npython -m src.pipeline --skip-experiments")],
+        ["7. Open the dashboard", "Opens in your web browser at localhost:8501. Stop it with "
+                                  "Ctrl+C in the terminal.",
+         cmd("streamlit run dashboard/app.py")],
+        ["8. (Optional) Rebuild this PDF", "Updates every number in this document from the "
+                                           "latest results.",
+         cmd("python explanation/make_explainer.py")],
+    ]
+    data = [[p(r[0], CELL_B if i == 0 else CELL), p(r[1], CELL_B if i == 0 else CELL),
+             p(r[2], CELL_B) if i == 0 else r[2]] for i, r in enumerate(rows)]
+    t = Table(data, colWidths=[1.45 * inch, 2.65 * inch, 2.9 * inch], hAlign="LEFT", repeatRows=1)
+    t.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"),
+                           ("LINEBELOW", (0, 0), (-1, -1), 0.4, LINE),
+                           ("BACKGROUND", (0, 0), (-1, 0), LIGHT),
+                           ("LINEBELOW", (0, 0), (-1, 0), 1, BLUE),
+                           ("BACKGROUND", (2, 1), (2, -1), colors.HexColor("#f6f6f4")),
+                           ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
+    s.append(t)
+    s.append(Spacer(1, 8))
+    s.append(p("<b>If something goes wrong</b>", BODY))
+    s.extend(bullets([
+        "<b>\"python is not recognized\"</b> (Windows): Python is not on PATH. Reinstall it and "
+        "tick \"Add Python to PATH\", then open a new PowerShell window.",
+        "<b>\"running scripts is disabled\"</b> when activating on Windows: run "
+        "<font name='Mono'>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</font> once, then "
+        "activate again.",
+        "<b>The first line says \"CSV fallback\"</b>: deltalake did not install. Run "
+        "<font name='Mono'>pip install deltalake pyarrow</font>. Everything still works without "
+        "it, just stored as CSV files instead of Delta tables.",
+        "<b>Next time</b> you open a terminal, go into the project folder and run the activate "
+        "command from step 4 again before any other command.",
+    ]))
 
     doc = SimpleDocTemplate(str(OUT), pagesize=letter, leftMargin=0.75 * inch,
                             rightMargin=0.75 * inch, topMargin=0.7 * inch, bottomMargin=0.75 * inch,

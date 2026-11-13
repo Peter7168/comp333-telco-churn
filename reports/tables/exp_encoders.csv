@@ -1,6 +1,6 @@
 experiment,encoder,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,model
-encoders,drop,0.6721,0.7859,0.5663,0.8272,0.8859,0.0157,5634,1408,32,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
-encoders,ordinal,0.6757,0.7897,0.5721,0.8256,0.8888,0.0168,5634,1408,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
-encoders,onehot,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
-encoders,frequency,0.6761,0.7897,0.572,0.8272,0.8881,0.0164,5634,1408,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
-encoders,target,0.6767,0.7906,0.5733,0.8261,0.8892,0.0134,5634,1408,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
+encoders,drop,0.6693,0.7852,0.5658,0.8194,0.8856,0.0137,4507,1126,32,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
+encoders,ordinal,0.675,0.7895,0.5717,0.8241,0.8881,0.0197,4507,1126,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
+encoders,onehot,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
+encoders,frequency,0.6741,0.789,0.5711,0.8227,0.8878,0.0169,4507,1126,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg
+encoders,target,0.6744,0.7897,0.5721,0.8214,0.8879,0.0206,4507,1126,47,True,True,cross_source,cap_iqr,yeo_johnson,standard,logreg

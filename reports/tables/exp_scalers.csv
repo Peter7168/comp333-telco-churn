@@ -1,13 +1,13 @@
 experiment,setup,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
-scalers,none | logreg,0.6807,0.8009,0.5927,0.7999,0.8898,0.017,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,logreg
-scalers,standard | logreg,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
-scalers,minmax | logreg,0.6846,0.8026,0.5946,0.8074,0.8889,0.0165,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,logreg
-scalers,robust | logreg,0.6827,0.8022,0.5946,0.802,0.89,0.0203,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,logreg
-scalers,maxabs | logreg,0.6835,0.8011,0.5916,0.81,0.8887,0.0196,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,logreg
-scalers,decimal | logreg,0.6805,0.7985,0.5876,0.809,0.8883,0.0157,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,logreg
-scalers,none | knn,0.5044,0.7822,0.6365,0.4179,0.8096,0.027,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,knn
-scalers,standard | knn,0.6102,0.8036,0.6446,0.5794,0.8503,0.0301,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,knn
-scalers,minmax | knn,0.6045,0.7992,0.6334,0.5784,0.8401,0.024,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,knn
-scalers,robust | knn,0.6123,0.8036,0.6427,0.5848,0.8497,0.0274,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,knn
-scalers,maxabs | knn,0.6047,0.7992,0.6333,0.5789,0.8389,0.0306,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,knn
-scalers,decimal | knn,0.6037,0.7984,0.6305,0.5794,0.8401,0.0313,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,knn
+scalers,none | logreg,0.6791,0.7996,0.5904,0.7993,0.8874,0.0231,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,logreg
+scalers,standard | logreg,0.6782,0.7993,0.5902,0.7973,0.8882,0.0235,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
+scalers,minmax | logreg,0.6792,0.7993,0.5898,0.8007,0.8868,0.024,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,logreg
+scalers,robust | logreg,0.6799,0.8003,0.5916,0.7993,0.8878,0.024,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,logreg
+scalers,maxabs | logreg,0.6788,0.7984,0.5878,0.8033,0.8867,0.0232,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,logreg
+scalers,decimal | logreg,0.6806,0.7994,0.5894,0.8054,0.8856,0.0236,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,logreg
+scalers,none | knn,0.5147,0.7906,0.6688,0.4187,0.8047,0.0259,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,knn
+scalers,standard | knn,0.6074,0.8044,0.6506,0.5699,0.848,0.0229,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,knn
+scalers,minmax | knn,0.6063,0.801,0.6389,0.5773,0.8398,0.021,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,knn
+scalers,robust | knn,0.6102,0.8037,0.6454,0.5793,0.849,0.0141,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,knn
+scalers,maxabs | knn,0.6039,0.7998,0.6363,0.5753,0.8398,0.0267,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,knn
+scalers,decimal | knn,0.6061,0.8,0.6355,0.5799,0.8411,0.0168,4507,1126,1168,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,knn

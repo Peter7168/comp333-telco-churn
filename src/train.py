@@ -9,12 +9,12 @@ import numpy as np
 import pandas as pd
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, roc_auc_score
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import StratifiedKFold
 
 from src import lake
 from src.clean import iqr_fences, usable_iqr_columns
 from src.config import MODELS, SEED, TABLES, TARGET
-from src.experiments import FINAL, prepare_fold
+from src.experiments import FINAL, prepare_fold, split_dev_test
 from src.features import NULL_COLUMNS
 
 MODEL_PATH = MODELS / "churn_model.joblib"
@@ -29,7 +29,9 @@ def best_model_name():
 
 
 def holdout_report(df, recipe):
-    train, test = train_test_split(df, test_size=0.2, stratify=df[TARGET], random_state=SEED)
+    # Same split as the experiments: train on the development set, grade once on the
+    # locked test set that no experiment has seen.
+    train, test = split_dev_test(df)
     pipe, X_tr, y_tr, X_te, y_te = prepare_fold(train, test, recipe)
     pipe.fit(X_tr, y_tr)
     pred = pipe.predict(X_te)

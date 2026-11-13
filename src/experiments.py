@@ -16,7 +16,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 
@@ -185,9 +185,23 @@ def run_stress(df):
     return table
 
 
+def split_dev_test(df):
+    """Lock away 20% of customers as the final test set before any experiment runs.
+
+    Every choice (cleaning, scaling, model...) is made with cross-validation on the
+    other 80% (the development set). The test set is only used once, in train.py,
+    to grade the final model.
+    """
+    return train_test_split(df, test_size=0.2, stratify=df[TARGET], random_state=SEED)
+
+
 def run(df=None):
     if df is None:
         df = lake.read("silver", "customers_integrated")
+    # I run every experiment on the development set only.
+    df, _ = split_dev_test(df)
+    df = df.reset_index(drop=True)
+    print(f"development set: {len(df)} customers (the 20% test set stays locked away)")
 
     results = {}
     print("stages")

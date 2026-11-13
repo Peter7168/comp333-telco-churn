@@ -15,7 +15,7 @@ which figure or table to use, and roughly how long to spend on it.
 | 8 | Cleaning: outliers | Boxplots, IQR vs z-score vs Isolation Forest, zero-inflated columns; stress test shows cleaning recovering F1 | `06_outlier_boxplots.png`, `04_stress_test.png` | DC outliers (10) | 0:50 |
 | 9 | Transformation | Normalization (log / Yeo-Johnson / quantile), 6 scalers (KNN chart), 5 encoders | `03_scalers.png`, `02_normalizers.png`, `02_encoders.png` | DT (20) | 1:00 |
 | 10 | ETL & features | Engineered features + mutual information ranking + permutation importance | `feature_ranking.csv`, `07_feature_importance.png` | ETL to find features (8) | 0:40 |
-| 11 | Results | Stage-by-stage F1 chart, final model 0.703 F1 / 0.902 AUC | `01_stages_f1.png`, `02_models.png` | with/without DC & DT | 0:40 |
+| 11 | Results | Stage-by-stage F1 chart, final model F1 0.69 in CV, 0.684 on the locked test set (AUC 0.898) | `01_stages_f1.png`, `02_models.png` | with/without DC & DT | 0:40 |
 | 12 | Dashboard demo | Filters -> map -> churn drivers -> predict a customer live | `streamlit run dashboard/app.py` | dashboard (10), tools (2) | 1:30 |
 | 13 | Tools & wrap-up | Python, pandas, scikit-learn, Delta Lake, SQLite, Streamlit, matplotlib, GitHub | | tools (2) | 0:15 |
 

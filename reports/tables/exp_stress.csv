@@ -1,13 +1,13 @@
 experiment,setup,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
-stress,clean data (reference),0.6265,0.746,0.5137,0.8031,0.845,0.0104,5634,1408,40,False,False,cross_source,cap_iqr,none,standard,onehot,logreg
-stress,nulls: drop_rows,0.6091,0.7305,0.4946,0.7929,0.8296,0.008,4146,1036,40,False,False,drop_rows,keep,none,standard,onehot,logreg
-stress,nulls: drop_columns,0.6113,0.7309,0.4957,0.7977,0.8288,0.01,5634,1408,37,False,False,drop_columns,keep,none,standard,onehot,logreg
-stress,nulls: constant,0.6113,0.7325,0.4975,0.7929,0.8314,0.0081,5634,1408,40,False,False,constant,keep,none,standard,onehot,logreg
-stress,nulls: statistical,0.6115,0.7325,0.4975,0.7935,0.8315,0.0081,5634,1408,40,False,False,statistical,keep,none,standard,onehot,logreg
-stress,nulls: cross_source,0.6117,0.7326,0.4976,0.794,0.8319,0.0098,5634,1408,40,False,False,cross_source,keep,none,standard,onehot,logreg
-stress,nulls: knn,0.6114,0.7322,0.4971,0.794,0.8313,0.0083,5634,1408,40,False,False,knn,keep,none,standard,onehot,logreg
-stress,outliers: keep,0.6117,0.7326,0.4976,0.794,0.8319,0.0098,5634,1408,40,False,False,cross_source,keep,none,standard,onehot,logreg
-stress,outliers: remove_iqr,0.6173,0.7417,0.5088,0.7849,0.8249,0.0095,5308,1408,40,False,False,cross_source,remove_iqr,none,standard,onehot,logreg
-stress,outliers: cap_iqr,0.6186,0.7407,0.5074,0.7924,0.838,0.0096,5634,1408,40,False,False,cross_source,cap_iqr,none,standard,onehot,logreg
-stress,outliers: remove_zscore,0.6181,0.7461,0.5145,0.7742,0.8292,0.0099,5397,1408,40,False,False,cross_source,remove_zscore,none,standard,onehot,logreg
-stress,outliers: isolation_forest,0.613,0.7358,0.5014,0.7886,0.8315,0.0079,5521,1408,40,False,False,cross_source,isolation_forest,none,standard,onehot,logreg
+stress,clean data (reference),0.6284,0.7487,0.5172,0.8013,0.8459,0.0266,4507,1126,40,False,False,cross_source,cap_iqr,none,standard,onehot,logreg
+stress,nulls: drop_rows,0.6158,0.7379,0.5006,0.8022,0.836,0.0158,3302,825,40,False,False,drop_rows,keep,none,standard,onehot,logreg
+stress,nulls: drop_columns,0.615,0.7336,0.499,0.802,0.8319,0.0103,4507,1126,37,False,False,drop_columns,keep,none,standard,onehot,logreg
+stress,nulls: constant,0.6154,0.7352,0.501,0.7987,0.8355,0.0107,4507,1126,40,False,False,constant,keep,none,standard,onehot,logreg
+stress,nulls: statistical,0.615,0.7355,0.5014,0.796,0.8359,0.0095,4507,1126,40,False,False,statistical,keep,none,standard,onehot,logreg
+stress,nulls: cross_source,0.6146,0.7359,0.5018,0.794,0.8365,0.0098,4507,1126,40,False,False,cross_source,keep,none,standard,onehot,logreg
+stress,nulls: knn,0.6125,0.7341,0.4998,0.792,0.8358,0.0082,4507,1126,40,False,False,knn,keep,none,standard,onehot,logreg
+stress,outliers: keep,0.6146,0.7359,0.5018,0.794,0.8365,0.0098,4507,1126,40,False,False,cross_source,keep,none,standard,onehot,logreg
+stress,outliers: remove_iqr,0.6156,0.7451,0.5134,0.7692,0.8291,0.0205,4265,1126,40,False,False,cross_source,remove_iqr,none,standard,onehot,logreg
+stress,outliers: cap_iqr,0.6267,0.7476,0.5162,0.7987,0.8426,0.0141,4507,1126,40,False,False,cross_source,cap_iqr,none,standard,onehot,logreg
+stress,outliers: remove_zscore,0.6235,0.7458,0.5139,0.7933,0.8363,0.017,4315,1126,40,False,False,cross_source,remove_zscore,none,standard,onehot,logreg
+stress,outliers: isolation_forest,0.6199,0.7419,0.509,0.7933,0.8375,0.0123,4416,1126,40,False,False,cross_source,isolation_forest,none,standard,onehot,logreg

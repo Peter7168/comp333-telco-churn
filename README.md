@@ -4,6 +4,9 @@ We predict which telecom customers will cancel (churn), a **binary classificatio
 The project covers data collection, integration of two sources, cleaning,
 transformation, ETL feature building, a Delta Lake store, a model and a dashboard.
 
+The written report is `report/COMP333_Final_Report.docx`. A 5-minute introduction for newcomers is
+`explanation/project_explainer.pdf`. Our own rubric review and the presentation Q&A are in `docs/`.
+
 ## Data
 
 | Source | Format | Files | Rows | Notes |

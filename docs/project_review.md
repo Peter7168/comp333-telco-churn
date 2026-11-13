@@ -80,6 +80,8 @@ Fixes Claude can do in the repo:
 
 Needs the team:
 
+- [ ] **Report.** First full draft is in `report/COMP333_Final_Report.docx` (17 pages). The team should
+  read it, add a dashboard screenshot to Section F, and confirm the date and member names.
 - [ ] **7. Slides.** Build the deck from `docs/presentation_plan.md`, decide who presents (at least two).
 - [ ] **8. Rehearse to 10 minutes** with the live demo, and keep screenshots as a backup.
   Click through every dashboard tab on a real laptop first. Prepare answers from

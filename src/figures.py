@@ -148,14 +148,15 @@ def importance():
     t = pd.read_csv(TABLES / "final_model_importance.csv").head(12)
     fig, ax = plt.subplots(figsize=(7, 4.5))
     hbar(ax, t["feature"], t["f1_drop"])
-    ax.set_title("What the final model relies on (permutation importance)")
-    ax.set_xlabel("Drop in F1 when the column is shuffled")
+    ax.set_title("What the final model relies on")
+    ax.set_xlabel("Permutation importance: drop in F1 when the column is shuffled")
     save(fig, "07_feature_importance")
 
 
 def run():
     gold = lake.read("gold", "customer_features")
     integrated = lake.read("silver", "customers_integrated")
+    erd()
     stages()
     ablation("nulls", "strategy", "Null handling strategies", "constant")
     ablation("feature_selection", "features", "How many features does the model need?", "all")
@@ -170,6 +171,85 @@ def run():
     importance()
     print(f"saved figures to {FIGURES}")
 
+
+
+# ---------- entity-relationship diagram ----------
+
+ERD_TABLES = {
+    # name: (x, top y, source, rows shown)
+    "service_subscriptions": (0.2, 9.3, 1, ["customerID  PK, FK", "PhoneService", "MultipleLines",
+                                             "InternetService", "+ 6 add-on columns"]),
+    "account_billing": (0.2, 5.6, 1, ["customerID  PK, FK", "Contract", "PaperlessBilling",
+                                       "PaymentMethod", "MonthlyCharges", "TotalCharges", "Churn"]),
+    "customer_profiles": (4.5, 9.3, 1, ["customerID  PK", "gender", "SeniorCitizen", "Partner",
+                                         "Dependents", "tenure"]),
+    "location": (4.5, 5.0, 2, ["Customer ID  PK, FK", "City", "Zip Code  FK", "Latitude",
+                               "Longitude"]),
+    "population": (4.5, 1.6, 2, ["Zip Code  PK", "Population"]),
+    "demographics": (8.8, 9.3, 2, ["Customer ID  PK, FK", "Age", "Under 30", "Senior Citizen",
+                                    "Married", "Dependents", "Number of Dependents"]),
+    "services": (8.8, 6.2, 2, ["Customer ID  PK, FK", "Number of Referrals", "Offer",
+                                "Internet Type", "Avg Monthly GB Download", "Contract",
+                                "Payment Method", "+ 22 more columns"]),
+    "status": (8.8, 2.8, 2, ["Customer ID  PK, FK", "Satisfaction Score", "Customer Status",
+                              "Churn Label", "Churn Score", "CLTV", "Churn Category / Reason"]),
+}
+ERD_LINKS = [("customer_profiles", "service_subscriptions", "1 : 1"),
+             ("customer_profiles", "account_billing", "1 : 1"),
+             ("customer_profiles", "demographics", "1 : 1"),
+             ("customer_profiles", "services", "1 : 1"),
+             ("customer_profiles", "status", "1 : 1"),
+             ("customer_profiles", "location", "1 : 1"),
+             ("location", "population", "N : 1")]
+BOX_W, ROW_H = 3.0, 0.34
+
+
+def erd():
+    """Draw the 8 source tables and how they join. Blue = source 1, green = source 2."""
+    fig, ax = plt.subplots(figsize=(12, 9.6))
+    ax.set_xlim(0, 12)
+    ax.set_ylim(0, 10)
+    ax.axis("off")
+    ax.grid(False)
+
+    def box(name):
+        x, top, _, rows = ERD_TABLES[name]
+        height = ROW_H * (len(rows) + 1)
+        return x, top - height, x + BOX_W, top   # left, bottom, right, top
+
+    # I draw the links first so the boxes sit on top of them.
+    for a, b, label in ERD_LINKS:
+        al, ab, ar, at = box(a)
+        bl, bb, br, bt = box(b)
+        if abs(al - bl) < 0.1:                       # same column: connect vertically
+            x1 = x2 = al + BOX_W / 2
+            y1, y2 = (ab, bt) if ab > bt else (at, bb)
+        else:                                        # different columns: connect sideways
+            x1, x2 = (al, br) if al > bl else (ar, bl)
+            y1, y2 = (at + ab) / 2, (bt + bb) / 2
+        ax.plot([x1, x2], [y1, y2], color=INK_2, linewidth=1.2, zorder=1)
+        ax.text((x1 + x2) / 2, (y1 + y2) / 2, label, ha="center", va="center", fontsize=9.5,
+                color=INK, zorder=3,
+                bbox={"facecolor": SURFACE, "edgecolor": "none", "pad": 1.5})
+
+    for name, (x, top, source, rows) in ERD_TABLES.items():
+        color = BLUE if source == 1 else AQUA
+        l, b, r, t = box(name)
+        ax.add_patch(plt.Rectangle((l, b), BOX_W, t - b, facecolor="white", edgecolor=color,
+                                   linewidth=1.3, zorder=2))
+        ax.add_patch(plt.Rectangle((l, t - ROW_H), BOX_W, ROW_H, facecolor=color,
+                                   edgecolor=color, zorder=2))
+        ax.text(l + BOX_W / 2, t - ROW_H / 2, name, ha="center", va="center", color="white",
+                fontsize=10.5, fontweight="bold", zorder=3)
+        for i, row in enumerate(rows):
+            ax.text(l + 0.12, t - ROW_H * (i + 1.5), row, va="center", fontsize=9, zorder=3,
+                    color=INK_2 if row.startswith("+") else INK)
+
+    ax.add_patch(plt.Rectangle((0.2, 0.55), 0.3, 0.22, facecolor=BLUE))
+    ax.text(0.6, 0.66, "Source 1: IBM GitHub (CSV)", va="center", fontsize=10)
+    ax.add_patch(plt.Rectangle((0.2, 0.15), 0.3, 0.22, facecolor=AQUA))
+    ax.text(0.6, 0.26, "Source 2: IBM Cognos 11.1.3 (XLSX)", va="center", fontsize=10)
+    save(fig, "00_erd")
 
 if __name__ == "__main__":
     run()

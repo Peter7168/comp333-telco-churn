@@ -1,0 +1,13 @@
+experiment,setup,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
+scalers,none | logreg,0.6807,0.8009,0.5927,0.7999,0.8898,0.017,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,logreg
+scalers,standard | logreg,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
+scalers,minmax | logreg,0.6846,0.8026,0.5946,0.8074,0.8889,0.0165,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,logreg
+scalers,robust | logreg,0.6827,0.8022,0.5946,0.802,0.89,0.0203,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,logreg
+scalers,maxabs | logreg,0.6835,0.8011,0.5916,0.81,0.8887,0.0196,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,logreg
+scalers,decimal | logreg,0.6805,0.7985,0.5876,0.809,0.8883,0.0157,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,logreg
+scalers,none | knn,0.5044,0.7822,0.6365,0.4179,0.8096,0.027,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,none,onehot,knn
+scalers,standard | knn,0.6102,0.8036,0.6446,0.5794,0.8503,0.0301,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,knn
+scalers,minmax | knn,0.6045,0.7992,0.6334,0.5784,0.8401,0.024,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,minmax,onehot,knn
+scalers,robust | knn,0.6123,0.8036,0.6427,0.5848,0.8497,0.0274,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,robust,onehot,knn
+scalers,maxabs | knn,0.6047,0.7992,0.6333,0.5789,0.8389,0.0306,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,maxabs,onehot,knn
+scalers,decimal | knn,0.6037,0.7984,0.6305,0.5794,0.8401,0.0313,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,decimal,onehot,knn

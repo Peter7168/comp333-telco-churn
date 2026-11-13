@@ -1,0 +1,75 @@
+source_table,original_column,unified_column
+github_customer_profiles,customerID,customer_id
+github_customer_profiles,gender,gender
+github_customer_profiles,SeniorCitizen,senior_citizen
+github_customer_profiles,Partner,partner
+github_customer_profiles,Dependents,dependents
+github_customer_profiles,tenure,tenure
+github_service_subscriptions,customerID,customer_id
+github_service_subscriptions,PhoneService,phone_service
+github_service_subscriptions,MultipleLines,multiple_lines
+github_service_subscriptions,InternetService,internet_service
+github_service_subscriptions,OnlineSecurity,online_security
+github_service_subscriptions,OnlineBackup,online_backup
+github_service_subscriptions,DeviceProtection,device_protection
+github_service_subscriptions,TechSupport,tech_support
+github_service_subscriptions,StreamingTV,streaming_tv
+github_service_subscriptions,StreamingMovies,streaming_movies
+github_account_billing,customerID,customer_id
+github_account_billing,Contract,contract
+github_account_billing,PaperlessBilling,paperless_billing
+github_account_billing,PaymentMethod,payment_method
+github_account_billing,MonthlyCharges,monthly_charges
+github_account_billing,TotalCharges,total_charges
+github_account_billing,Churn,churn
+cognos_demographics,Customer ID,customer_id
+cognos_demographics,Gender,gender
+cognos_demographics,Age,age
+cognos_demographics,Under 30,under_30
+cognos_demographics,Senior Citizen,senior_citizen
+cognos_demographics,Married,partner
+cognos_demographics,Dependents,dependents
+cognos_demographics,Number of Dependents,number_of_dependents
+cognos_location,Customer ID,customer_id
+cognos_location,City,city
+cognos_location,Zip Code,zip_code
+cognos_location,Latitude,latitude
+cognos_location,Longitude,longitude
+cognos_population,Zip Code,zip_code
+cognos_population,Population,population
+cognos_services,Customer ID,customer_id
+cognos_services,Referred a Friend,referred_a_friend
+cognos_services,Number of Referrals,number_of_referrals
+cognos_services,Tenure in Months,tenure
+cognos_services,Offer,offer
+cognos_services,Phone Service,phone_service
+cognos_services,Avg Monthly Long Distance Charges,avg_monthly_long_distance_charges
+cognos_services,Multiple Lines,multiple_lines
+cognos_services,Internet Service,has_internet
+cognos_services,Internet Type,internet_type
+cognos_services,Avg Monthly GB Download,avg_monthly_gb_download
+cognos_services,Online Security,online_security
+cognos_services,Online Backup,online_backup
+cognos_services,Device Protection Plan,device_protection
+cognos_services,Premium Tech Support,tech_support
+cognos_services,Streaming TV,streaming_tv
+cognos_services,Streaming Movies,streaming_movies
+cognos_services,Streaming Music,streaming_music
+cognos_services,Unlimited Data,unlimited_data
+cognos_services,Contract,contract
+cognos_services,Paperless Billing,paperless_billing
+cognos_services,Payment Method,payment_method
+cognos_services,Monthly Charge,monthly_charges
+cognos_services,Total Charges,total_charges
+cognos_services,Total Refunds,total_refunds
+cognos_services,Total Extra Data Charges,total_extra_data_charges
+cognos_services,Total Long Distance Charges,total_long_distance_charges
+cognos_services,Total Revenue,total_revenue
+cognos_status,Customer ID,customer_id
+cognos_status,Satisfaction Score,satisfaction_score
+cognos_status,Customer Status,customer_status
+cognos_status,Churn Label,churn
+cognos_status,Churn Score,churn_score
+cognos_status,CLTV,cltv
+cognos_status,Churn Category,churn_category
+cognos_status,Churn Reason,churn_reason

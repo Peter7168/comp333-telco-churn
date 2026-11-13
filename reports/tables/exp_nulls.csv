@@ -1,0 +1,7 @@
+experiment,strategy,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
+nulls,drop_rows,0.7007,0.7935,0.6263,0.7961,0.881,0.0208,1993,498,911,True,True,drop_rows,cap_iqr,yeo_johnson,standard,onehot,logreg
+nulls,drop_columns,0.679,0.7992,0.5899,0.8004,0.8882,0.0172,5634,1408,1171,True,True,drop_columns,cap_iqr,yeo_johnson,standard,onehot,logreg
+nulls,constant,0.68,0.8002,0.5915,0.8004,0.8898,0.0182,5634,1408,1183,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg
+nulls,statistical,0.6805,0.8007,0.5922,0.8004,0.8897,0.0195,5634,1408,1183,True,True,statistical,cap_iqr,yeo_johnson,standard,onehot,logreg
+nulls,cross_source,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
+nulls,knn,0.6801,0.8004,0.5918,0.7999,0.8898,0.0194,5634,1408,1183,True,True,knn,cap_iqr,yeo_johnson,standard,onehot,logreg

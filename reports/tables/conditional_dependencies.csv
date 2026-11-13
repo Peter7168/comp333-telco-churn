@@ -1,0 +1,10 @@
+dependency,rows,holds
+internet_service='No' -> online_security='No internet service',1526,True
+internet_service='No' -> online_backup='No internet service',1526,True
+internet_service='No' -> device_protection='No internet service',1526,True
+internet_service='No' -> tech_support='No internet service',1526,True
+internet_service='No' -> streaming_tv='No internet service',1526,True
+internet_service='No' -> streaming_movies='No internet service',1526,True
+internet_service='No' -> avg_monthly_gb_download=0,1526,True
+phone_service=0 -> avg_monthly_long_distance_charges=0,682,True
+total_revenue = total_charges + extra_data + long_distance - refunds,7043,True

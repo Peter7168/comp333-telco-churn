@@ -1,0 +1,16 @@
+attribute,customer_id,source1_value,source2_value
+dependents,9237-HQITU,0,1
+dependents,9305-CDSKC,0,1
+dependents,7892-POOKP,0,1
+tenure,4472-LVYGI,0,10
+tenure,3115-CZMZD,0,10
+tenure,5709-LVOEQ,0,10
+contract,4929-XIHVW,Month-to-month,One year
+contract,3413-BMNZE,Month-to-month,One year
+contract,8012-SOUDQ,Month-to-month,One year
+payment_method,7590-VHVEG,Electronic check,Bank Withdrawal
+payment_method,5575-GNVDE,Mailed check,Mailed Check
+payment_method,3668-QPYBK,Mailed check,Credit Card
+total_charges,4472-LVYGI,,525.5
+total_charges,3115-CZMZD,,202.5
+total_charges,5709-LVOEQ,,808.5

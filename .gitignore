@@ -1,0 +1,12 @@
+# Rebuilt by python -m src.pipeline
+data/lake/
+data/warehouse.db
+models/
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+.DS_Store
+warn.log

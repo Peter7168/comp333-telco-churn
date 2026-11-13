@@ -1,0 +1,9 @@
+source,file,bronze_table,rows,columns,null_cells,size_mb
+IBM GitHub (CSV),customer_profiles.csv,github_customer_profiles,7043,6,0,0.201
+IBM GitHub (CSV),service_subscriptions.csv,github_service_subscriptions,7043,10,0,0.487
+IBM GitHub (CSV),account_billing.csv,github_account_billing,7043,7,11,0.438
+IBM Cognos 11.1.3 (XLSX),Telco_customer_churn_demographics.xlsx,cognos_demographics,7043,9,0,0.353
+IBM Cognos 11.1.3 (XLSX),Telco_customer_churn_location.xlsx,cognos_location,7043,9,0,0.534
+IBM Cognos 11.1.3 (XLSX),Telco_customer_churn_population.xlsx,cognos_population,1671,3,0,0.052
+IBM Cognos 11.1.3 (XLSX),Telco_customer_churn_services.xlsx,cognos_services,7043,30,5403,1.226
+IBM Cognos 11.1.3 (XLSX),Telco_customer_churn_status.xlsx,cognos_status,7043,11,10348,0.397

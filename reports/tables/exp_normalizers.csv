@@ -1,0 +1,5 @@
+experiment,normalizer,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,scaler,encoder,model
+normalizers,none,0.6797,0.798,0.5869,0.8079,0.8895,0.015,5634,1408,1183,True,True,cross_source,cap_iqr,standard,onehot,logreg
+normalizers,log,0.6843,0.8004,0.5902,0.8149,0.8907,0.0168,5634,1408,1183,True,True,cross_source,cap_iqr,standard,onehot,logreg
+normalizers,yeo_johnson,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,standard,onehot,logreg
+normalizers,quantile,0.6739,0.7937,0.5807,0.8031,0.8817,0.0136,5634,1408,1183,True,True,cross_source,cap_iqr,standard,onehot,logreg

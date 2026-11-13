@@ -1,0 +1,6 @@
+experiment,stage,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model
+stages,1. raw source 1,0.6263,0.745,0.513,0.8042,0.8437,0.013,5625,1406,19,False,False,drop_rows,keep,none,none,ordinal,logreg
+stages,2. + cleaning,0.6259,0.7451,0.5127,0.8036,0.8439,0.0124,5634,1408,19,False,False,cross_source,cap_iqr,none,none,ordinal,logreg
+stages,3. + transformation,0.6321,0.7559,0.5269,0.7902,0.8493,0.0178,5634,1408,40,False,False,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
+stages,4. + integration (source 2),0.6791,0.7994,0.59,0.8004,0.8905,0.0158,5634,1408,1170,True,False,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg
+stages,5. + ETL features,0.6797,0.8001,0.5913,0.7999,0.8898,0.0188,5634,1408,1183,True,True,cross_source,cap_iqr,yeo_johnson,standard,onehot,logreg

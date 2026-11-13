@@ -18,6 +18,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfmetrics import registerFontFamily
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate,
                                 Spacer, Table, TableStyle)
@@ -41,6 +42,8 @@ LINE = colors.HexColor("#d9d8d4")
 FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
 pdfmetrics.registerFont(TTFont("Body", str(FONT_DIR / "DejaVuSans.ttf")))
 pdfmetrics.registerFont(TTFont("Bold", str(FONT_DIR / "DejaVuSans-Bold.ttf")))
+# I link the two so <b> inside a paragraph switches to the bold file.
+registerFontFamily("Body", normal="Body", bold="Bold", italic="Body", boldItalic="Bold")
 
 H1 = ParagraphStyle("h1", fontName="Bold", fontSize=22, leading=27, textColor=INK, spaceAfter=4)
 SUB = ParagraphStyle("sub", fontName="Body", fontSize=10.5, leading=14, textColor=INK_2, spaceAfter=14)
@@ -64,15 +67,18 @@ def bullets(items):
             for t in items]
 
 
-def table(rows, widths, header=True):
+def table(rows, widths, header=True, section_rows=()):
     data = [[p(str(c), CELL_B if (header and i == 0) else CELL) for c in r]
             for i, r in enumerate(rows)]
-    t = Table(data, colWidths=widths, hAlign="LEFT")
+    t = Table(data, colWidths=widths, hAlign="LEFT", repeatRows=1 if header else 0)
     style = [("VALIGN", (0, 0), (-1, -1), "TOP"),
              ("LINEBELOW", (0, 0), (-1, -1), 0.4, LINE),
              ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4)]
     if header:
         style += [("BACKGROUND", (0, 0), (-1, 0), LIGHT), ("LINEBELOW", (0, 0), (-1, 0), 1, BLUE)]
+    for r in section_rows:
+        # A section row spans the whole table, like a sub-heading.
+        style += [("SPAN", (0, r), (-1, r)), ("TOPPADDING", (0, r), (-1, r), 8)]
     t.setStyle(TableStyle(style))
     return t
 
@@ -154,7 +160,7 @@ def build():
     W = 7 * inch
 
     s = []
-    # ---------- page 1: what and why ----------
+    # ---------- what and why ----------
     s.append(p("Predicting which telecom customers will leave", H1))
     s.append(p("COMP 333 Data Analytics · Team Stats and Furious · A 5-minute introduction "
                "to the whole project", SUB))
@@ -201,8 +207,65 @@ def build():
                "file from Phase 1, split into 3 tables. Source 2 adds age, number of dependants, "
                "referrals, offers, internet type, location and zip-code population.", SMALL))
 
-    # ---------- page 2: how it works ----------
+    # ---------- the 8 files, one by one ----------
     s.append(PageBreak())
+    s.append(p("The 8 files, one by one", H2))
+    s.append(p("Think of it like this: <b>source 1 says what each customer bought and whether "
+               "they left</b>. <b>Source 2 describes the same customers in more detail</b>: who "
+               "they are, where they live, how much they use, what they paid, and why they left. "
+               "Every file except population has one row per customer, linked by customer ID."))
+    s.append(table([
+        ["File", "What one row is", "What is inside", "Why it matters"],
+        ["<b>Source 1 · IBM GitHub · CSV</b>", "", "", ""],
+        ["customer_profiles.csv<br/>6 columns", "a customer",
+         "gender, senior citizen, partner, dependents (yes/no), tenure in months",
+         "Who the customer is, basic version"],
+        ["service_subscriptions.csv<br/>10 columns", "a customer",
+         "phone, multiple lines, internet type (DSL / fiber / none), 6 add-ons "
+         "(security, backup, device protection, tech support, TV, movies)",
+         "What they subscribe to"],
+        ["account_billing.csv<br/>7 columns", "a customer",
+         "contract type, paperless billing, payment method (4 kinds), monthly and total "
+         "charges, <b>Churn</b>",
+         "Holds the <b>label we predict</b>. Has the 11 blank totals"],
+        ["<b>Source 2 · IBM Cognos · Excel</b>", "", "", ""],
+        ["demographics.xlsx<br/>9 columns", "a customer",
+         "exact <b>age</b>, under 30, senior, married, dependents, <b>number of dependants</b>",
+         "Adds age and a dependant count. Disagrees with source 1 on dependents for 551 customers"],
+        ["location.xlsx<br/>9 columns", "a customer",
+         "country, state (all California), <b>city</b>, <b>zip code</b>, latitude, longitude",
+         "Lets us map customers and join to population"],
+        ["population.xlsx<br/>3 columns", "<b>a zip code</b> (1,671 rows)",
+         "zip code, population of that zip code",
+         "The only file not about customers. Joined through location (many customers to one zip)"],
+        ["services.xlsx<br/>30 columns", "a customer",
+         "<b>referrals</b>, <b>offer</b> (A–E or none), internet type incl. Cable, GB downloaded, "
+         "long distance, streaming music, unlimited data, refunds, extra data charges, total "
+         "revenue, plus its own copy of contract, payment method (3 kinds) and charges",
+         "Most new features. Its payment and contract values disagree with source 1"],
+        ["status.xlsx<br/>11 columns", "a customer",
+         "satisfaction score, customer status (stayed / churned / joined), churn label, churn "
+         "score, lifetime value, churn category and reason",
+         "Mostly the <b>answer in disguise</b>, so we use none of it as input"],
+    ], [1.55 * inch, 1.0 * inch, 2.75 * inch, 1.7 * inch], section_rows=(1, 5)))
+    s.append(Spacer(1, 6))
+    s.append(p("Not counted above: <b>Telco-Customer-Churn.csv</b>, the original one-file version "
+               "of source 1 (21 columns). Phase 1 split it into the three CSVs so each table "
+               "covers one subject; we keep it in data/raw only as the original download.",
+               SMALL))
+    s.append(KeepTogether([p("How the files overlap", H2), table([
+        ["Information", "Source 1", "Source 2", "What we do"],
+        ["Gender, senior, partner", "yes", "yes (\"Married\")", "Same values. Keep source 1"],
+        ["Dependents", "yes / no", "yes / no + count", "551 conflicts. Keep source 1 flag, add the count"],
+        ["Tenure, charges", "yes", "yes", "Match, except the 11 new customers: source 2 fills their blanks"],
+        ["Contract", "yes", "yes", "265 conflicts. Keep source 1"],
+        ["Payment method", "4 kinds", "3 different kinds", "No clean mapping. Keep source 1"],
+        ["Internet", "DSL / fiber / none", "yes/no + DSL / fiber / cable", "Keep source 1, add internet type"],
+        ["Churn label", "yes", "yes", "Identical for all 7,043"],
+        ["Age, referrals, offer, usage, location, population", "no", "yes", "New. This is what source 2 adds"],
+    ], [1.9 * inch, 1.15 * inch, 1.6 * inch, 2.35 * inch])]))
+
+    # ---------- how it works ----------
     s.append(p("How it works", H2))
     s.append(p("One command, <font name='Bold'>python -m src.pipeline</font>, runs every step "
                "below in order. Each step is a small Python file in the <font name='Bold'>src/"

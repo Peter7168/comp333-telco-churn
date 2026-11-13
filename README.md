@@ -15,7 +15,7 @@ The written report is `report/COMP333_Final_Report.docx`. A 5-minute introductio
 | IBM Cognos Analytics 11.1.3 "Telco customer churn" module ([IBM docs](https://community.ibm.com/community/user/businessanalytics/blogs/steven-macko/2019/07/11/telco-customer-churn-1113)) | XLSX | 5 | 7,043 (population: 1,671 zip codes) | demographics, location, zip population, services usage, status |
 
 8 files, 3.69 MB in total. All 7,043 customer IDs match across both sources.
-`reports/tables/dataset_stats.csv` has the per-file counts.
+`results/tables/dataset_stats.csv` has the per-file counts.
 
 ## How to run
 
@@ -56,7 +56,7 @@ raw files ──ingest──> bronze (8 tables, as-is)
 | `src/experiments.py` | Locks a 20% test set, then 5-fold CV for every setup; one setting changed at a time |
 | `src/train.py` / `src/predict.py` | Final model, graded once on the locked test set, saved model, scoring |
 | `src/lake.py` | Delta Lake bronze / silver / gold layers with time travel, SQLite warehouse |
-| `src/figures.py` | Slide charts in `reports/figures` |
+| `src/figures.py` | Slide charts in `results/figures` |
 | `dashboard/app.py` | Streamlit dashboard with filters, map, data quality, results, live prediction |
 | `tests/` + `.github/workflows/check.yml` | On every push, GitHub installs the requirements, runs the pipeline with Delta Lake and tests the lake, model and dashboard |
 
@@ -101,7 +101,7 @@ What the experiments show:
 - For cleaning, scaling and encoding the options are within 0.01 F1 of each other, which is
   inside the fold-to-fold noise (about 0.02), so we picked the option that fits the data best.
 
-All numbers come from `reports/tables/`. The pipeline rewrites them on every run.
+All numbers come from `results/tables/`. The pipeline rewrites them on every run.
 
 ## Integration findings
 

@@ -7,7 +7,7 @@
   4. etl          cleaning + new features   -> silver/customers_clean, gold/customer_features
   5. experiments  F1 with and without each cleaning / transformation step
   6. train        final model               -> models/churn_model.joblib
-  7. figures      charts for the slides     -> reports/figures
+  7. figures      charts for the slides     -> results/figures
 
 Add --skip-experiments to skip step 5 (it takes about 5 minutes).
 """

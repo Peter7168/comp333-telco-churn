@@ -1,7 +1,7 @@
 """Churn dashboard.  Run from the repo root:  streamlit run dashboard/app.py
 
 Reads the gold table from the SQLite warehouse, the experiment results from
-reports/tables, and the saved model for live predictions.
+results/tables, and the saved model for live predictions.
 """
 import sys
 from pathlib import Path

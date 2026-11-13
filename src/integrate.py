@@ -10,7 +10,7 @@ Rules I follow:
   * source 1 is the source of truth for attributes both sources have,
     because Phase 1 was built on it and its label matches 100%
   * source 2 adds the attributes source 1 does not have
-  * every disagreement is logged in reports/tables/integration_conflicts.csv
+  * every disagreement is logged in results/tables/integration_conflicts.csv
 """
 import pandas as pd
 

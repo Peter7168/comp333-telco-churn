@@ -95,4 +95,4 @@ erDiagram
 ```
 
 Source 2 tables list only the main columns. The full column-by-column mapping
-is in `reports/tables/schema_mapping.csv`.
+is in `results/tables/schema_mapping.csv`.

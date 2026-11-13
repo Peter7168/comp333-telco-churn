@@ -10,8 +10,8 @@ COGNOS_DIR = RAW / "ibm_cognos"      # source 2: IBM Cognos 11.1.3 module (XLSX)
 LAKE = ROOT / "data" / "lake"        # bronze / silver / gold layers live here
 WAREHOUSE = ROOT / "data" / "warehouse.db"   # SQLite copy the dashboard reads
 
-FIGURES = ROOT / "reports" / "figures"
-TABLES = ROOT / "reports" / "tables"
+FIGURES = ROOT / "results" / "figures"
+TABLES = ROOT / "results" / "tables"
 MODELS = ROOT / "models"
 
 TARGET = "churn"

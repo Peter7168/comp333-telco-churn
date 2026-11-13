@@ -1,7 +1,7 @@
 """Build explanation/project_explainer.pdf, a 5-minute intro to the project.
 
 Run from the repo root after the pipeline:  python explanation/make_explainer.py
-Numbers are read from reports/tables, so the PDF stays in sync with the results.
+Numbers are read from results/tables, so the PDF stays in sync with the results.
 """
 import sys
 from pathlib import Path
@@ -642,8 +642,8 @@ def build():
         ["data/raw/", "The 8 original files from both sources"],
         ["data/lake/", "Delta Lake tables: bronze, silver, gold (rebuilt on every run)"],
         ["src/", "All pipeline code, one file per step"],
-        ["reports/tables/", "Every result as CSV: conflicts, dependencies, nulls, outliers, experiments"],
-        ["reports/figures/", "The charts used in the slides"],
+        ["results/tables/", "Every result as CSV: conflicts, dependencies, nulls, outliers, experiments"],
+        ["results/figures/", "The charts used in the slides"],
         ["dashboard/app.py", "The Streamlit dashboard"],
         ["docs/", "ERD and the presentation plan"],
     ], [1.8 * inch, 5.2 * inch])]))

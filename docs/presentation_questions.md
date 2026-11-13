@@ -1,6 +1,6 @@
 # Questions to be ready for
 
-Short answers the whole team should be able to give. Numbers come from `reports/tables/`
+Short answers the whole team should be able to give. Numbers come from `results/tables/`
 (run of Nov 13). If the pipeline is rerun, check them again.
 
 ## Topic and ML task
@@ -61,7 +61,7 @@ could be read by Spark later without changes.
 ## Data integration
 
 **12. How did you integrate the schemas?**
-A mapping table of 74 source columns to one snake_case schema (`reports/tables/schema_mapping.csv`).
+A mapping table of 74 source columns to one snake_case schema (`results/tables/schema_mapping.csv`).
 Example: `Tenure in Months` and `tenure` both become `tenure`; `Married` and `Partner` both
 become `partner`. Values are harmonized too: Yes/No becomes 1/0, `Month-to-Month` becomes
 `Month-to-month`.

@@ -10,6 +10,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from matplotlib.patches import FancyBboxPatch
 from reportlab.lib import colors
@@ -25,6 +26,7 @@ from reportlab.platypus import (Image, KeepTogether, PageBreak, Paragraph, Simpl
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
+from src import lake  # noqa: E402
 from src.config import FIGURES, TABLES  # noqa: E402
 
 OUT = ROOT / "explanation" / "project_explainer.pdf"
@@ -136,6 +138,185 @@ def draw_pipeline():
             "and cleaned, gold = final features).", fontsize=8.5, color="#52514e")
     fig.savefig(DIAGRAM, dpi=220, bbox_inches="tight", facecolor="white")
     plt.close(fig)
+
+
+def examples():
+    """Pull real values for the worked examples, so the PDF never shows made-up numbers."""
+    from src import lake
+    from src.clean import iqr_fences
+
+    cid = "7590-VHVEG"
+    bronze = {n: lake.read("bronze", n) for n in
+              ("github_customer_profiles", "github_account_billing", "cognos_services",
+               "cognos_demographics", "cognos_location", "cognos_population")}
+    integ = lake.read("silver", "customers_integrated")
+    clean = lake.read("silver", "customers_clean")
+    gold = lake.read("gold", "customer_features")
+
+    def row(name, key, value):
+        df = bronze[name]
+        return df[df[key] == value].iloc[0]
+
+    ex = {
+        "s1_prof": row("github_customer_profiles", "customerID", cid),
+        "s1_bill": row("github_account_billing", "customerID", cid),
+        "s2_srv": row("cognos_services", "Customer ID", cid),
+        "s2_dem": row("cognos_demographics", "Customer ID", cid),
+        "s2_loc": row("cognos_location", "Customer ID", cid),
+        "integ": integ[integ["customer_id"] == cid].iloc[0],
+        "gold": gold[gold["customer_id"] == cid].iloc[0],
+    }
+    zip_code = ex["s2_loc"]["Zip Code"]
+    ex["population"] = row("cognos_population", "Zip Code", zip_code)["Population"]
+    ex["same_zip"] = int((bronze["cognos_location"]["Zip Code"] == zip_code).sum())
+
+    # A contract conflict between the two sources.
+    s1 = bronze["github_account_billing"][["customerID", "Contract"]]
+    s2 = bronze["cognos_services"][["Customer ID", "Contract"]]
+    both = s1.merge(s2, left_on="customerID", right_on="Customer ID", suffixes=("_s1", "_s2"))
+    conflict = both[both["Contract_s1"].str.lower() != both["Contract_s2"].str.lower()].iloc[0]
+    ex["conflict"] = conflict
+
+    # One of the 11 blank totals, before and after cleaning.
+    blank_id = integ.loc[integ["total_charges"].isna(), "customer_id"].iloc[0]
+    ex["no_offer_id"] = integ.loc[integ["offer"].isna(), "customer_id"].iloc[0]
+    ex["blank"] = (integ[integ["customer_id"] == blank_id].iloc[0],
+                   clean[clean["customer_id"] == blank_id].iloc[0])
+
+    # The biggest data download, and the fence it gets capped at.
+    big = integ.sort_values("avg_monthly_gb_download").iloc[-1]
+    ex["outlier"] = (big, iqr_fences(integ["avg_monthly_gb_download"])[3])
+
+    # Transformation of our main customer, using statistics from the clean table.
+    c, t = clean, ex["integ"]
+    ex["z_tenure"] = (t["tenure"] - c["tenure"].mean()) / c["tenure"].std(ddof=0)
+    lo, hi = c["monthly_charges"].min(), c["monthly_charges"].max()
+    ex["minmax_monthly"] = (t["monthly_charges"] - lo) / (hi - lo)
+    ex["la_share"] = (c["city"] == t["city"]).mean()
+    ex["la_churn"] = c.loc[c["city"] == t["city"], "churn"].mean()
+    return ex
+
+
+def step_examples(ex):
+    """One block per pipeline step: what it does, then a before -> after table."""
+    s1p, s1b, s2s, s2d = ex["s1_prof"], ex["s1_bill"], ex["s2_srv"], ex["s2_dem"]
+    i, g = ex["integ"], ex["gold"]
+    W3 = [2.0 * inch, 2.35 * inch, 2.65 * inch]
+    out = []
+
+    def block(title, code, intro, rows, widths=W3, note=None):
+        parts = [p(f"<b>{title}</b>  <font color='#52514e' size='8.5'>({code})</font>",
+                   ParagraphStyle("st", parent=BODY, fontSize=11, spaceBefore=8, spaceAfter=3)),
+                 p(intro), table(rows, widths)]
+        if note:
+            parts.append(p(note, SMALL))
+        out.append(KeepTogether(parts))
+
+    block("Step 1. Collect and store", "ingest.py, lake.py",
+          "We load all 8 files exactly as they are into the <b>bronze</b> layer of the data lake. "
+          "Nothing is changed yet. Here is the same customer in both sources: different column "
+          "names and different ways of writing the same thing.",
+          [["Source 1 says (account_billing.csv)", "Source 2 says (services.xlsx)", "Problem"],
+           [f"Contract = \"{s1b['Contract']}\"", f"Contract = \"{s2s['Contract']}\"",
+            "Same meaning, different capital letters"],
+           [f"Partner = \"{s1p['Partner']}\"", f"Married = \"{s2d['Married']}\"",
+            "Same fact, different column name"],
+           [f"PaymentMethod = \"{s1b['PaymentMethod']}\"",
+            f"Payment Method = \"{s2s['Payment Method']}\"", "The sources disagree"],
+           [f"TotalCharges = \"{s1b['TotalCharges']}\" (stored as text)",
+            f"Total Charges = {s2s['Total Charges']} (a number)", "Different data types"]])
+
+    conf = ex["conflict"]
+    block("Step 2. Integrate", "integrate.py, dependencies.py",
+          "We give every column one shared name, write values the same way everywhere, then "
+          "join everything into <b>one row per customer</b>. When the sources disagree we keep "
+          "source 1 and log the conflict.",
+          [["Before", "After", "Rule we applied"],
+           [f"Partner = \"{s1p['Partner']}\" / Married = \"{s2d['Married']}\"",
+            f"partner = {i['partner']}", "Yes/No becomes 1/0, one column name"],
+           [f"\"{s1b['Contract']}\" / \"{s2s['Contract']}\"", f"contract = \"{i['contract']}\"",
+            "One spelling for every category"],
+           [f"Customer {conf['customerID']}: \"{conf['Contract_s1']}\" vs \"{conf['Contract_s2']}\"",
+            f"contract = \"{conf['Contract_s1']}\"", "Conflict: source 1 wins (265 cases)"],
+           [f"zip code {ex['s2_loc']['Zip Code']} (location file)",
+            f"population = {ex['population']:,}",
+            f"Looked up in the population file. {ex['same_zip']} customers share this zip"],
+           ["74 columns spread over 8 files", "1 row per customer, 50 columns",
+            "Joined on customer ID"]],
+          note="We also check rules that should always hold, called <b>functional dependencies</b>. "
+               "Example: a zip code always belongs to one city (true for all 1,626 zip codes), and "
+               "anyone aged 65 or more is marked senior citizen (true for every customer).")
+
+    before, after = ex["blank"]
+    big, fence = ex["outlier"]
+    block("Step 3. Clean", "clean.py",
+          "We fix missing values and extreme values. The rule is learned from the training "
+          "customers only, then applied to everyone.",
+          [["Before", "After", "Why"],
+           [f"Customer {before['customer_id']}: total charges = <i>blank</i>",
+            f"total charges = {after['total_charges']:.2f}",
+            "Source 2 has the value, so we copy it (11 customers)"],
+           [f"Customer {ex['no_offer_id']}: offer = <i>blank</i>",
+            "offer = \"None\"",
+            "Blank here means they never got an offer (3,877 customers)"],
+           ["internet type = <i>blank</i>", "internet type = \"None\"",
+            "Blank means no internet (1,526 customers)"],
+           [f"Customer {big['customer_id']}: {big['avg_monthly_gb_download']:.0f} GB per month",
+            f"{fence:.0f} GB per month",
+            "Far above typical use, so we cap it at the upper limit"]],
+          note=f"How we spot extreme values: most customers download 3 to 27 GB. Anything above "
+               f"{fence:.0f} GB (the middle range stretched by 1.5x) counts as an outlier.")
+
+    block("Step 4. Transform", "transform.py",
+          "Models only understand numbers on similar scales. So we rescale numbers and turn "
+          "text into numbers. Our customer has been with the company 1 month and pays $29.85.",
+          [["Before", "After", "What we did"],
+           [f"tenure = {i['tenure']} month", f"{ex['z_tenure']:.2f}",
+            "Standard scaling: how far below the average customer (32 months) they are"],
+           [f"monthly charge = ${i['monthly_charges']:.2f}", f"{ex['minmax_monthly']:.2f}",
+            "Min-max scaling: 0 = cheapest bill, 1 = most expensive"],
+           [f"tenure = {i['tenure']}", f"{i['tenure'] / 100:.2f}",
+            "Decimal scaling: divide by 100 so every value is below 1"],
+           [f"total charges = ${i['total_charges']:.2f}", f"{np.log1p(i['total_charges']):.2f}",
+            "Log: shrinks very large totals so a few big spenders don't dominate"],
+           [f"contract = \"{i['contract']}\"", "month-to-month = 1, one year = 0, two year = 0",
+            "One-hot encoding: one yes/no column per category"],
+           [f"city = \"{i['city']}\"", f"{ex['la_share']:.3f} (frequency) or {ex['la_churn']:.2f} (target)",
+            "Frequency: share of customers in that city. Target: churn rate of that city"]])
+
+    block("Step 5. Build new features (ETL)", "features.py, etl.py",
+          "We combine existing columns into new ones that say something the raw columns don't.",
+          [["Built from", "New column", "Value for our customer"],
+           ["the 6 add-on columns + streaming music", "addon_count", f"{g['addon_count']:.0f}"],
+           ["monthly charge ÷ number of services", "charge_per_service", f"${g['charge_per_service']:.2f}"],
+           ["contract", "is_month_to_month", f"{g['is_month_to_month']:.0f} (yes)"],
+           ["payment method contains \"automatic\"", "auto_pay", f"{g['auto_pay']:.0f} (no)"],
+           ["tenure", "tenure_band", str(g["tenure_band"])],
+           ["tenure ≤ 6 months", "is_new_customer", f"{g['is_new_customer']:.0f} (yes)"]],
+          widths=[2.6 * inch, 1.7 * inch, 2.7 * inch])
+
+    block("Step 6. Test every choice", "experiments.py",
+          "For each step we try several options and keep everything else the same. Each option "
+          "is trained on 80% of customers and graded on the other 20%, five times over, so "
+          "every customer is graded once.",
+          [["We compared", "Options", "Winner"],
+           ["Ways to fill blanks", "6 (delete rows, delete columns, 0, median, copy from source 2, "
+                                   "nearest neighbours)", "copy from source 2"],
+           ["Ways to handle extremes", "5 (keep, remove, cap, z-score, Isolation Forest)", "cap"],
+           ["Ways to scale numbers", "6 scalers × 2 models", "standard"],
+           ["Ways to encode text", "5 encoders", "one-hot"],
+           ["Models", "4 (logistic regression, KNN, random forest, gradient boosting)",
+            "gradient boosting"]],
+          widths=[1.7 * inch, 3.6 * inch, 1.7 * inch])
+
+    block("Step 7. Predict and show", "train.py, predict.py, dashboard/app.py",
+          "The final model gives every customer a chance of leaving. The dashboard shows "
+          "these scores and lets you type in a new customer.",
+          [["Customer", "Model says", "Why it makes sense"],
+           [f"{i['customer_id']}: 1 month, month-to-month, no referrals, no dependants",
+            f"{g['churn_probability']:.0%} chance of leaving",
+            "New, no commitment, no ties: the riskiest profile. The company should reach out"]])
+    return out
 
 
 def footer(canvas, doc):
@@ -274,35 +455,10 @@ def build():
     s.append(Spacer(1, 6))
 
     s.append(p("How we built it, step by step", H2))
-    steps = [
-        ("1. Collect + store", "ingest.py, lake.py",
-         "Load all 8 files into the <b>bronze</b> layer of a <b>Delta Lake</b> (a data lake format "
-         "that keeps every version of a table). A SQLite copy feeds the dashboard."),
-        ("2. Integrate", "integrate.py, dependencies.py",
-         "Rename every column to one shared name (74 source columns mapped), turn Yes/No into "
-         "1/0 everywhere, and join on customer ID (1-to-1) and zip code (many-to-1). Every "
-         "disagreement between sources is logged. We also check <b>functional dependencies</b>, "
-         "e.g. zip code determines city, and age determines senior citizen."),
-        ("3. Clean", "clean.py",
-         "<b>Nulls:</b> 11 blank total charges (filled from source 2) and structural blanks such "
-         "as \"no offer\" (filled with \"None\"). 6 strategies compared. <b>Outliers:</b> found with "
-         "IQR, z-score and Isolation Forest; 5 strategies compared (keep, remove, cap, ...)."),
-        ("4. Transform", "transform.py",
-         "<b>Normalization</b> of skewed columns (log, Yeo-Johnson, quantile). <b>Scaling</b> (z-score, "
-         "min-max, robust, max-abs, decimal scaling). <b>Encoding</b> of text categories (one-hot, "
-         "ordinal, frequency, target)."),
-        ("5. ETL features", "features.py, etl.py",
-         "Build new columns such as number of add-ons, price per service, tenure band and "
-         "auto-pay. Rank all features by how much they tell us about churn."),
-        ("6. Experiments", "experiments.py",
-         "Score every option with 5-fold cross-validation, changing <b>one setting at a time</b>, "
-         "so we can say exactly what each step is worth."),
-        ("7. Model + deploy", "train.py, predict.py, dashboard/app.py",
-         "Train the best model, save it, and serve it in a Streamlit dashboard where you can "
-         "enter a customer and get a churn probability."),
-    ]
-    s.append(table([["Step", "Code", "What happens"]] + [list(x) for x in steps],
-                   [1.25 * inch, 1.45 * inch, 4.3 * inch]))
+    s.append(p("To make each step concrete, we follow real customers through the pipeline. Our "
+               "main example is customer <b>7590-VHVEG</b>. Every value below comes from the "
+               "actual data and code."))
+    s.extend(step_examples(examples()))
 
     s.append(KeepTogether([p("Three decisions worth knowing", H2)] + bullets([
         "<b>Source 1 wins conflicts.</b> When the sources disagree (e.g. contract type for 265 "
@@ -318,28 +474,44 @@ def build():
     # ---------- outputs ----------
     s.append(p("What came out of it", H2))
     s.append(figure(FIGURES / "01_stages_f1.png", 5.2 * inch))
-    s.append(p("The chart adds one project stage at a time. Most of the gain comes from "
-               "<b>integrating the second source</b>.", SMALL))
+    s.append(p("How to read it: each bar is the model's score after adding one more stage of the "
+               "project. The score (F1) runs from 0 to 1, and higher means the model finds more "
+               "of the customers who leave while raising fewer false alarms. The biggest jump "
+               "comes from <b>adding the second source</b>.", SMALL))
 
-    s.append(p("Key results", H2))
+    s.append(p("Key results, in plain words", H2))
     drop = nulls.loc["drop_rows"]
+    leavers = int(final["tp"] + final["fn"])
+    flagged = int(final["tp"] + final["fp"])
+    caught = final["tp"] / leavers
+    right = final["tp"] / flagged
+    g = lake.read("gold", "customer_features")
+    rate = lambda mask: g.loc[mask, "churn"].mean()  # noqa: E731
     s.extend(bullets([
-        f"<b>Final model:</b> {MODEL_NAMES.get(best, best)} with F1 "
-        f"{models.loc[best, 'f1']:.3f} and ROC-AUC {models.loc[best, 'roc_auc']:.3f} in "
-        f"cross-validation; F1 {final['f1']:.3f} on a separate 20% hold-out set.",
-        f"<b>Integration:</b> F1 went from {stages['f1'].iloc[2]:.3f} to {stages['f1'].iloc[3]:.3f} "
-        "after adding source 2.",
-        "<b>Cleaning</b> changes little on the real data (only 11 bad cells). On a copy with "
-        f"simulated damage, F1 fell from {stress.loc['clean data (reference)', 'f1']:.3f} to "
-        f"{stress.loc['nulls: drop_rows', 'f1']:.3f}; imputing and capping outliers brought it "
-        f"back to {stress.loc['outliers: cap_iqr', 'f1']:.3f}.",
-        f"<b>Dropping rows with nulls</b> scores {drop['f1']:.3f} but only because it also "
-        f"deletes {1 - drop['test_rows'] / nulls['test_rows'].max():.0%} of the customers we "
-        "test on. It can't predict for them at all, so we don't use it.",
-        f"<b>Scaling</b> barely matters for logistic regression but lifts KNN from "
-        f"{scalers.loc['none | knn', 'f1']:.3f} to {scalers.loc['standard | knn', 'f1']:.3f}.",
-        "<b>Strongest signals:</b> number of referrals, month-to-month contract, number of "
-        "dependants and tenure.",
+        f"<b>The model works.</b> We tested it on {int(final['test_rows']):,} customers it had "
+        f"never seen. {leavers} of them really left. The model caught <b>{int(final['tp'])} of "
+        f"those {leavers}</b> (about {round(caught * 10)} in 10). When it warned about a customer, "
+        f"it was right about {round(right * 10)} times in 10. Guessing would catch far fewer.",
+        f"<b>The second source mattered most.</b> Adding it improved the model's score from "
+        f"{stages['f1'].iloc[2]:.2f} to {stages['f1'].iloc[3]:.2f} (on a scale where 1 is perfect). "
+        "Things like referrals and number of dependants only exist in source 2.",
+        "<b>Cleaning had little to fix in our data</b> (only 11 blank cells), so it barely "
+        "changed the score. To prove cleaning still matters, we damaged a copy of the data on "
+        "purpose (blanks and typos): the score dropped, and our cleaning won back about half "
+        "of the loss.",
+        f"<b>Deleting incomplete rows is a trap.</b> It looks like the best option, but only "
+        f"because it throws away {1 - drop['test_rows'] / nulls['test_rows'].max():.0%} of the "
+        "customers. A company can't ignore 2 in 3 customers, so we fill the blanks instead.",
+        "<b>Putting numbers on the same scale</b> doesn't change much for some models but is "
+        f"essential for others: one model's score jumped from "
+        f"{scalers.loc['none | knn', 'f1']:.2f} to {scalers.loc['standard | knn', 'f1']:.2f}.",
+        f"<b>Who leaves?</b> Customers on month-to-month contracts "
+        f"({rate(g['contract'] == 'Month-to-month'):.0%} leave, vs "
+        f"{rate(g['contract'] == 'Two year'):.0%} on two-year contracts), new customers "
+        f"({rate(g['tenure'] <= 12):.0%} in their first year), and customers with no family on the "
+        f"plan ({rate(g['number_of_dependents'] == 0):.0%} vs {rate(g['number_of_dependents'] > 0):.0%} "
+        f"with dependants). Customers who referred friends leave less "
+        f"({rate(g['number_of_referrals'] > 0):.0%} vs {rate(g['number_of_referrals'] == 0):.0%}).",
     ]))
 
     s.append(KeepTogether([p("Where to find things", H2), table([

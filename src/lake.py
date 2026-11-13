@@ -43,7 +43,9 @@ def read(layer, name, version=None):
     path = _path(layer, name)
     if HAS_DELTA and path.exists():
         return DeltaTable(str(path), version=version).to_pandas()
-    return pd.read_csv(path.with_suffix(".csv"))
+    # I only treat empty cells as missing. By default pandas also turns the text
+    # "None" into a blank, which would undo our "no offer" fill.
+    return pd.read_csv(path.with_suffix(".csv"), keep_default_na=False, na_values=[""])
 
 
 def history(layer, name):

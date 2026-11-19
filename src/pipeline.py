@@ -2,7 +2,7 @@
 
   1. ingest       raw CSV + XLSX files      -> bronze
   2. integrate    schema mapping + joins    -> silver/customers_integrated
-  2b. entity resolution: match the sources without the ID, as a check on the join
+  2b. entity_resolution  match the sources without the ID
   3. dependencies functional dependency checks
   4. etl          cleaning + new features   -> silver/customers_clean, gold/customer_features
   5. experiments  F1 with and without each cleaning / transformation step
@@ -11,7 +11,7 @@
   7. figures      charts for the report     -> results/figures
   8. powerbi      star schema for Power BI  -> results/powerbi
 
-Add --skip-experiments to skip step 5 (it takes about 5 minutes).
+--skip-experiments skips step 5.
 """
 import sys
 import time

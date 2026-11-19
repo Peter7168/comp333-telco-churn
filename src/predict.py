@@ -11,12 +11,11 @@ def load():
 
 
 def predict(customers, bundle=None):
-    """customers: dataframe with the same raw columns as the integrated table.
-    Returns the churn probability for each row."""
+    """Churn probability for each row (same columns as the integrated table)."""
     bundle = bundle or load()
     df = customers.copy()
 
-    # I repeat the training-time cleaning with the values saved at training time.
+    # Same cleaning as training, using the saved values.
     for col in ("offer", "internet_type"):
         if col in df:
             df[col] = df[col].fillna("None")

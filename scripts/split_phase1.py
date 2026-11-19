@@ -1,8 +1,4 @@
-"""Rebuild the three Phase 1 tables from the IBM GitHub CSV.
-
-Phase 1 split the flat file into customer_profiles, service_subscriptions
-and account_billing. I rerun the same split here so the repo is reproducible.
-"""
+"""Split the IBM CSV into customer_profiles, service_subscriptions and account_billing."""
 import sys
 from pathlib import Path
 
@@ -20,7 +16,7 @@ BILLING_COLS = ["customerID", "Contract", "PaperlessBilling", "PaymentMethod",
 
 
 def main():
-    # I read every column as text so TotalCharges keeps its blank cells.
+    # Read as text to keep TotalCharges blanks.
     flat = pd.read_csv(GITHUB_DIR / "Telco-Customer-Churn.csv", dtype=str, keep_default_na=False)
 
     tables = {

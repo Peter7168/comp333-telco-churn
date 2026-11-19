@@ -1,8 +1,5 @@
-"""Checks that the built project is sound. Run after the pipeline:  pytest -q tests
-
-On GitHub (CI=true) the Delta Lake and Streamlit tests must pass. On a machine
-without those packages they are skipped, since the pipeline falls back to CSV.
-"""
+"""Tests. Run after the pipeline: pytest -q tests
+(Delta Lake and Streamlit tests are skipped locally if not installed.)"""
 import os
 import sys
 from pathlib import Path
@@ -24,7 +21,7 @@ def test_lake_is_delta_with_history_and_time_travel():
     if not lake.HAS_DELTA and not ON_CI:
         pytest.skip("deltalake not installed here")
     assert lake.HAS_DELTA, "the lake must be Delta Lake, not the CSV fallback"
-    # train.py rewrites the gold table with risk scores, so it has at least 2 versions.
+    # train.py rewrites gold with risk scores -> at least 2 versions.
     history = lake.history("gold", "customer_features")
     assert len(history) >= 2
     first = lake.read("gold", "customer_features", version=0)
@@ -51,7 +48,7 @@ def test_gold_table_is_one_clean_row_per_customer():
 
 
 def test_new_customers_are_consistent():
-    # The 11 customers with a blank total have tenure 0, so their total must be 0.
+    # The 11 blank totals belong to tenure-0 customers -> 0.
     gold = lake.read("gold", "customer_features")
     new = gold[gold["tenure"] == 0]
     assert len(new) == 11
@@ -80,7 +77,7 @@ def test_feature_engine_results():
     if not ON_CI:
         pytest.importorskip("feature_engine")
     capped = pd.read_csv(TABLES / "feature_engine_winsorizer.csv")
-    # Feature-engine's IQR caps must be the same as ours.
+    # Feature-engine caps must equal ours.
     assert capped["max_difference_vs_ours"].abs().max() < 1e-6
     assert len(pd.read_csv(TABLES / "exp_feature_engine.csv")) == 4
 
@@ -105,7 +102,7 @@ def test_dashboard_loads_and_predicts():
     app = AppTest.from_file(str(ROOT / "dashboard" / "app.py"), default_timeout=180).run()
     assert not app.exception, [e.value for e in app.exception]
 
-    # Pressing the form button runs the deployed model on the default customer.
+    # Submitting the form scores the default customer.
     submit = next(b for b in app.button if b.label == "Predict churn")
     app = submit.click().run()
     assert not app.exception, [e.value for e in app.exception]

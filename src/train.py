@@ -1,7 +1,4 @@
-"""Step 6: train the final model, evaluate it on a hold-out set and save it.
-
-The model choice comes from the models experiment (best mean F1 in CV).
-"""
+"""Train the final model (best CV F1), evaluate on the test set and save it."""
 from dataclasses import replace
 
 import joblib
@@ -29,8 +26,7 @@ def best_model_name():
 
 
 def holdout_report(df, recipe):
-    # Same split as the experiments: train on the development set, grade once on the
-    # locked test set that no experiment has seen.
+    # Train on the development set, grade once on the locked test set.
     train, test = split_dev_test(df)
     pipe, X_tr, y_tr, X_te, y_te = prepare_fold(train, test, recipe)
     pipe.fit(X_tr, y_tr)
@@ -44,7 +40,7 @@ def holdout_report(df, recipe):
                              "fn": fn, "tn": tn, "test_rows": len(y_te)}]).round(4)
     metrics.to_csv(TABLES / "final_model_metrics.csv", index=False)
 
-    # Permutation importance: how much F1 drops when I shuffle one input column.
+    # Permutation importance: F1 drop when a column is shuffled.
     imp = permutation_importance(pipe, X_te, y_te, scoring="f1", n_repeats=5,
                                  random_state=SEED, n_jobs=-1)
     importance = (pd.DataFrame({"feature": X_te.columns, "f1_drop": imp.importances_mean})
@@ -73,11 +69,11 @@ def run(df=None):
 
     metrics = holdout_report(df, recipe)
 
-    # I refit on every customer for the saved model.
+    # Refit on all customers for the saved model.
     pipe, X, y, _, _ = prepare_fold(df, df, recipe)
     pipe.fit(X, y)
 
-    # predict.py needs the same cleaning values the training data used.
+    # Cleaning values reused by predict.py.
     numeric_fill = {c: float(df[c].median()) for c in NULL_COLUMNS
                     if pd.api.types.is_numeric_dtype(df[c])}
     fences = {c: [float(v) for v in iqr_fences(df[c])[2:]] for c in usable_iqr_columns(df)}
@@ -85,7 +81,7 @@ def run(df=None):
                  "numeric_fill": numeric_fill, "fences": fences}, MODEL_PATH)
     print(f"saved {MODEL_PATH.name}")
 
-    # The dashboard shows these risk scores, so I store them in the gold layer too.
+    # Out-of-fold risk scores stored in gold for the dashboard.
     gold = lake.read("gold", "customer_features")
     oof = out_of_fold_scores(df, recipe)
     gold["churn_probability"] = gold["customer_id"].map(

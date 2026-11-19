@@ -1,16 +1,9 @@
-"""Step 2: schema integration of the two sources into one customer table.
+"""Schema integration of source 1 (IBM CSV) and source 2 (IBM Cognos XLSX).
 
-Source 1 (IBM GitHub CSV, our Phase 1 tables) and source 2 (IBM Cognos 11.1.3
-XLSX module) describe the same 7,043 customers with different column names,
-different value spellings and some conflicting values.
-
-Rules I follow:
-  * every column gets one snake_case name (see the mapping table)
-  * Yes/No style values become 1/0 in both sources
-  * source 1 is the source of truth for attributes both sources have,
-    because Phase 1 was built on it and its label matches 100%
-  * source 2 adds the attributes source 1 does not have
-  * every disagreement is logged in results/tables/integration_conflicts.csv
+- One snake_case name per column (SCHEMA_MAP)
+- Yes/No -> 1/0
+- Source 1 wins on shared attributes; source 2 adds new ones
+- Conflicts logged to results/tables/integration_conflicts.csv
 """
 import pandas as pd
 
@@ -69,19 +62,18 @@ SCHEMA_MAP = {
         "CLTV": "cltv", "Churn Category": "churn_category", "Churn Reason": "churn_reason",
     },
 }
-# Columns I drop on purpose: Count (always 1), Country/State (one value),
-# Lat Long (same as latitude + longitude), Quarter (always Q3), Churn Value
-# (same as Churn Label), ID in population (row number, not a real key).
+# Dropped: Count, Country, State, Lat Long, Quarter, Churn Value and the population ID
+# (constant, duplicated or not a real key).
 
 BINARY = ["senior_citizen", "partner", "dependents", "phone_service", "paperless_billing",
           "churn", "under_30", "referred_a_friend", "has_internet", "streaming_music",
           "unlimited_data"]
 YES_NO = {"Yes": 1, "No": 0, "1": 1, "0": 0, 1: 1, 0: 0}
 
-# Source 2 spells some categories differently, so I map them to source 1 spelling.
+# Source 2 contract spellings -> source 1 spellings.
 CONTRACT_FIX = {"Month-to-Month": "Month-to-month", "One Year": "One year", "Two Year": "Two year"}
 
-# Attributes both sources have. I compare these to find conflicts.
+# Attributes present in both sources (compared for conflicts).
 SHARED = ["gender", "senior_citizen", "partner", "dependents", "tenure", "phone_service",
           "multiple_lines", "online_security", "online_backup", "device_protection",
           "tech_support", "streaming_tv", "streaming_movies", "contract", "paperless_billing",
@@ -103,7 +95,7 @@ def harmonize(df):
     if "contract" in df:
         df["contract"] = df["contract"].replace(CONTRACT_FIX)
     if "total_charges" in df:
-        # I turn the blank strings into real NaN; cleaning decides what to do with them.
+        # Blank strings become NaN; filled later in cleaning.
         df["total_charges"] = pd.to_numeric(df["total_charges"], errors="coerce")
     for col in ("tenure", "monthly_charges"):
         if col in df:
@@ -122,7 +114,7 @@ def build_source2():
     s2 = load_renamed("cognos_demographics")
     for name in ("cognos_location", "cognos_services", "cognos_status"):
         s2 = s2.merge(load_renamed(name), on="customer_id", how="inner", validate="one_to_one")
-    # Location -> population is many-to-one: many customers share a zip code.
+    # Location -> population is many-to-one on zip code.
     s2 = s2.merge(load_renamed("cognos_population"), on="zip_code", how="left", validate="many_to_one")
     return harmonize(s2)
 
@@ -136,7 +128,7 @@ def compare_shared(s1, s2):
         a, b = both[f"{col}_s1"], both[f"{col}_s2"]
         if col in ("multiple_lines", "online_security", "online_backup", "device_protection",
                    "tech_support", "streaming_tv", "streaming_movies"):
-            # Source 1 says "No internet service"; source 2 just says "No".
+            # "No internet service" in source 1 is "No" in source 2.
             a = a.replace({"No internet service": "No", "No phone service": "No"})
         if pd.api.types.is_float_dtype(a) or pd.api.types.is_float_dtype(b):
             same = (a - b).abs().lt(0.01) | (a.isna() & b.isna())
@@ -165,7 +157,7 @@ def run():
     s1 = build_source1()
     s2 = build_source2()
 
-    # I record match rates to show no customer is lost or duplicated by the joins.
+    # Match rates: no customer lost or duplicated.
     ids1, ids2 = set(s1["customer_id"]), set(s2["customer_id"])
     print(f"source 1: {len(s1)} customers, source 2: {len(s2)} customers, "
           f"matched: {len(ids1 & ids2)}")
@@ -177,8 +169,8 @@ def run():
     print(disagree.to_string(index=False))
     print(f"the other {len(conflicts) - len(disagree)} shared attributes agree for every customer")
 
-    # Source 1 wins for shared attributes, so I keep only the new columns from source 2.
-    # I also keep the source 2 tenure and total_charges for the null-filling experiment.
+    # Source 1 wins on shared attributes; source 2 adds new columns.
+    # Source 2 tenure/total_charges kept as backups for the cross_source null strategy.
     extra = [c for c in s2.columns if c not in SHARED or c == "customer_id"]
     backup = s2[["customer_id", "tenure", "total_charges"]].rename(
         columns={"tenure": "tenure_s2", "total_charges": "total_charges_s2"})
@@ -187,8 +179,7 @@ def run():
 
     print(f"\nintegrated table: {integrated.shape[0]} rows x {integrated.shape[1]} columns")
 
-    # The two sources use different payment categories, so I save the crosstab
-    # to show there is no clean one-to-one mapping (I keep source 1's 4 categories).
+    # Crosstabs show payment method has no one-to-one mapping between sources.
     both = s1[["customer_id", "payment_method", "contract"]].merge(
         s2[["customer_id", "payment_method", "contract"]], on="customer_id", suffixes=("_s1", "_s2"))
     pd.crosstab(both["payment_method_s1"], both["payment_method_s2"]).to_csv(

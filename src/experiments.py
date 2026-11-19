@@ -1,11 +1,7 @@
-"""Step 5: measure what each preparation step is worth.
+"""Experiments: model performance with and without each cleaning and transformation step.
 
-The prof asked for model performance with and without data cleaning (DC) and
-data transformation (DT). I describe every setup as a Recipe and score it
-with the same 5-fold stratified cross-validation, so every number in the
-results tables is directly comparable.
-
-Each experiment changes ONE setting of the final recipe and keeps the rest.
+Every setup is a Recipe scored with the same 5-fold stratified CV.
+Each experiment changes one setting of the final recipe.
 """
 import warnings
 from dataclasses import asdict, dataclass, replace
@@ -26,8 +22,7 @@ from src.config import SEED, TABLES, TARGET
 from src.features import SKEWED, add_features, columns, present, rank_features
 from src.transform import ENCODERS, NORMALIZERS, SCALERS, build_preprocessor
 
-# Cities that only appear in a test fold are expected (they become all zeros),
-# and unscaled logistic regression not converging is one of the results we report.
+# Expected warnings: unseen cities in a fold, and unscaled logistic regression.
 warnings.filterwarnings("ignore", message="Found unknown categories")
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
@@ -46,12 +41,11 @@ class Recipe:
     drop_correlated: bool = False   # drop repeated numeric features (Feature-engine)
 
 
-# The setup we present as our final pipeline. Experiments vary one field at a time.
+# Final pipeline settings. Each experiment changes one field.
 FINAL = Recipe()
 
-# What "no cleaning, no transformation" means for us: drop rows with nulls,
-# keep outliers, raw numbers, and categories turned into integer codes
-# (the least we can do so the model accepts text columns).
+# Baseline with minimal preparation: drop null rows, keep outliers, no scaling,
+# categories as integer codes.
 RAW = Recipe(use_source2=False, use_engineered=False, nulls="drop_rows", outliers="keep",
              normalizer="none", scaler="none", encoder="ordinal")
 
@@ -73,7 +67,7 @@ def prepare_fold(train, test, recipe):
     """Apply one recipe to a train/test split. Returns a ready pipeline and the data."""
     binary, numeric, categorical = columns(recipe.use_source2, recipe.use_engineered)
     raw_cols = [c for c in binary + numeric + categorical if c in train]
-    # I keep the source 2 copies of total_charges and tenure for the cross_source null fill.
+    # Source 2 backups for the cross_source null strategy.
     keep = list(dict.fromkeys(raw_cols + ["total_charges_s2", "tenure_s2", TARGET]))
     train, test = train[keep], test[keep]
 
@@ -85,14 +79,13 @@ def prepare_fold(train, test, recipe):
     binary, numeric, categorical = (present(binary, train), present(numeric, train),
                                     present(categorical, train))
     if recipe.top_k:
-        # I rank on the training rows only, so the held-out fold has no say in the choice.
+        # Ranked on training rows only (no leakage).
         best = set(rank_features(train, binary, numeric, categorical, TARGET).index[:recipe.top_k])
         binary, numeric, categorical = ([c for c in binary if c in best],
                                         [c for c in numeric if c in best],
                                         [c for c in categorical if c in best])
     if recipe.drop_correlated:
-        # Feature-engine finds numeric features that repeat each other (|r| > 0.9),
-        # again learned on the training rows only.
+        # Drop numeric features with |r| > 0.9, fit on training rows only.
         from feature_engine.selection import DropCorrelatedFeatures
         finder = DropCorrelatedFeatures(threshold=0.9, variables=numeric)
         finder.fit(train[numeric].astype(float))
@@ -143,7 +136,7 @@ def run_grid(df, name, label_field, recipes):
 
 
 def stage_recipes():
-    """The cumulative story for the slides: add one stage of the project at a time."""
+    """Add one pipeline stage at a time."""
     cleaned = replace(RAW, nulls=FINAL.nulls, outliers=FINAL.outliers)
     transformed = replace(cleaned, normalizer=FINAL.normalizer, scaler=FINAL.scaler,
                           encoder=FINAL.encoder)
@@ -162,9 +155,7 @@ STRESS_NUMERIC = ["tenure", "monthly_charges", "total_charges", "age", "avg_mont
 
 
 def corrupt(df, null_rate=0.10, error_rate=0.03, seed=SEED):
-    """Simulate dirty data: blank out 10% of some numeric cells and multiply 3%
-    of them by 10 (a typing error with an extra zero). The source 2 backups stay
-    untouched, like a second system that kept a correct copy."""
+    """Simulated dirty data: 10% blanks and 3% values x10 in some numeric columns."""
     rng = np.random.default_rng(seed)
     dirty = df.copy()
     for col in STRESS_NUMERIC:
@@ -177,11 +168,7 @@ def corrupt(df, null_rate=0.10, error_rate=0.03, seed=SEED):
 
 
 def run_stress(df):
-    """Same recipes on the corrupted copy, so the value of cleaning is visible.
-
-    I use source 1 features only here: with source 2 the model has enough other
-    signal that it barely notices the damage, which hides the point of the test.
-    """
+    """Cleaning strategies on the corrupted copy (source 1 features only)."""
     dirty = corrupt(df)
     base = replace(FINAL, use_source2=False, use_engineered=False, normalizer="none")
     recipes = [("clean data (reference)", base, df)]
@@ -201,19 +188,14 @@ def run_stress(df):
 
 
 def split_dev_test(df):
-    """Lock away 20% of customers as the final test set before any experiment runs.
-
-    Every choice (cleaning, scaling, model...) is made with cross-validation on the
-    other 80% (the development set). The test set is only used once, in train.py,
-    to grade the final model.
-    """
+    """80/20 split: development set for experiments, test set for the final model only."""
     return train_test_split(df, test_size=0.2, stratify=df[TARGET], random_state=SEED)
 
 
 def run(df=None):
     if df is None:
         df = lake.read("silver", "customers_integrated")
-    # I run every experiment on the development set only.
+    # Experiments use the development set only.
     df, _ = split_dev_test(df)
     df = df.reset_index(drop=True)
     print(f"development set: {len(df)} customers (the 20% test set stays locked away)")
@@ -232,8 +214,7 @@ def run(df=None):
     results["normalizers"] = run_grid(df, "normalizers", "normalizer",
                                       [(n, replace(FINAL, normalizer=n)) for n in NORMALIZERS])
     print("scalers")
-    # Logistic regression and KNN both depend on distances / magnitudes, so
-    # scaling should matter for them. I test both.
+    # Scaling is tested on two scale-sensitive models.
     results["scalers"] = run_grid(df, "scalers", "setup",
                                   [(f"{s} | {m}", replace(FINAL, scaler=s, model=m))
                                    for m in ("logreg", "knn") for s in SCALERS])

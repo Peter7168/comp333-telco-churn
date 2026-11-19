@@ -1,11 +1,7 @@
-"""Step 4b: Feature-engine, a feature engineering library built on scikit-learn.
+"""Feature-engine transformers compared with the pipeline's own steps.
 
-I use three of its transformers and compare each one with what we already had:
-  * Winsorizer             - IQR outlier capping (same rule as our cap_iqr)
-  * RareLabelEncoder       - groups rare categories (e.g. small cities) into "Rare"
-  * DropCorrelatedFeatures - finds numeric features that repeat each other
-
-Each one is also scored with the same 5-fold CV as the other experiments.
+Winsorizer (IQR capping), RareLabelEncoder (rare categories -> "Rare"),
+DropCorrelatedFeatures (redundant numeric features).
 """
 from dataclasses import asdict, replace
 
@@ -26,8 +22,8 @@ except ImportError:
 
 
 def winsorizer_check(df):
-    """Fit Feature-engine's Winsorizer and compare it with our own IQR fences."""
-    # Winsorizer refuses blank values, so I apply our null rule first.
+    """Fit Feature-engine's Winsorizer and compare it with the pipeline's IQR fences."""
+    # Winsorizer needs no nulls.
     df, _ = handle_nulls(df, df, FINAL.nulls)
     cols = usable_iqr_columns(df)
     data = df[cols].astype(float)
@@ -77,7 +73,7 @@ def run(df=None):
     print()
     print(groups.to_string(index=False))
 
-    # I score each Feature-engine option against the step it replaces, on the dev set.
+    # Score each option on the development set.
     dev, _ = split_dev_test(df)
     dev = dev.reset_index(drop=True)
     setups = [

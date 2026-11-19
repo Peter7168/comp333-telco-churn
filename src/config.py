@@ -17,8 +17,7 @@ MODELS = ROOT / "models"
 TARGET = "churn"
 SEED = 42
 
-# I keep these out of the features because they are computed after the
-# customer already churned (or they literally encode the answer).
+# Excluded from features: recorded after churn, so they leak the label.
 LEAKY_COLUMNS = [
     "satisfaction_score",   # 1-2 is always churn, 4-5 is never churn
     "churn_score",

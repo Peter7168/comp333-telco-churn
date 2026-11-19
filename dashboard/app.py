@@ -1,8 +1,4 @@
-"""Churn dashboard.  Run from the repo root:  streamlit run dashboard/app.py
-
-Reads the gold table from the SQLite warehouse, the experiment results from
-results/tables, and the saved model for live predictions.
-"""
+"""Churn dashboard. Run: streamlit run dashboard/app.py"""
 import sys
 from pathlib import Path
 
@@ -36,9 +32,9 @@ def model():
 
 df = customers()
 st.title("Telco customer churn")
-st.caption("COMP 333 · Stats and Furious · 7,043 customers from 2 IBM sources, 8 files")
+st.caption("7,043 customers from 2 IBM sources, 8 files")
 
-# I put the filters in one row above everything so every tab respects them.
+# Filters apply to every tab.
 f1, f2, f3 = st.columns(3)
 contracts = f1.multiselect("Contract", sorted(df["contract"].unique()))
 internet = f2.multiselect("Internet type", sorted(df["internet_type"].unique()))
@@ -64,7 +60,7 @@ with overview:
              help="Customers who have not left yet but the model scores at 50% or more")
 
     st.subheader("Where the customers are")
-    # Red for customers who left, blue for those who stayed.
+    # Red = churned, blue = stayed.
     points = view[["latitude", "longitude", "churn"]].copy()
     points["color"] = points["churn"].map({1: "#e34948", 0: "#2a78d6"})
     st.map(points, latitude="latitude", longitude="longitude", color="color", size=40)
@@ -116,7 +112,7 @@ with quality:
     c4.dataframe(table("outlier_report"), hide_index=True)
 
 with results:
-    st.subheader("F1 as each stage of the project is added")
+    st.subheader("F1 as each pipeline stage is added")
     stages = table("exp_stages").set_index("stage")
     st.bar_chart(stages["f1"], y_label="F1", horizontal=True)
 
@@ -142,7 +138,7 @@ with live:
     st.subheader("Score a customer with the deployed model")
     st.caption("Fields you don't set keep the most common value in the data.")
 
-    # I start from a typical customer and overwrite whatever the user changes.
+    # Start from a typical customer; the form overrides fields.
     template = lake.read("silver", "customers_integrated")
     base = {c: (template[c].median() if pd.api.types.is_numeric_dtype(template[c])
                 else template[c].mode()[0]) for c in template.columns}
@@ -161,7 +157,7 @@ with live:
         submitted = st.form_submit_button("Predict churn")
 
     if submitted:
-        # I keep the related fields consistent with the dependencies we found.
+        # Keep dependent fields consistent.
         no_net = base["internet_service"] == "No"
         base["internet_type"] = None if no_net else ("Fiber Optic" if base["internet_service"] == "Fiber optic" else "DSL")
         if no_net:

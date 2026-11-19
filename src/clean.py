@@ -1,9 +1,4 @@
-"""Step 3: data cleaning. Null handling and outlier handling.
-
-Every strategy is "fit" on the training rows only and then applied to the test
-rows, so the test fold never leaks into the cleaning decisions. Rows are only
-ever removed from training data, never from the data we evaluate on.
-"""
+"""Null and outlier handling. Fit on training rows, applied to test rows."""
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
@@ -27,7 +22,7 @@ def null_report(df):
     return pd.DataFrame(rows)
 
 
-# Backup copies from source 2 that cross_source can fill from.
+# Source 2 backups used by cross_source.
 BACKUPS = {"total_charges": "total_charges_s2", "tenure": "tenure_s2"}
 
 
@@ -39,15 +34,13 @@ def handle_nulls(train, test, strategy):
                 if c not in backups and (train[c].isna().any() or test[c].isna().any())]
 
     if strategy == "drop_rows":
-        # The naive fix: throw away any row with a null. Offer is null for 55% of
-        # customers (they never got an offer), so this loses a lot of data.
+        # Drops ~65% of rows, since most customers have no offer.
         return train.dropna(subset=has_null), test.dropna(subset=has_null)
 
     if strategy == "drop_columns":
         return train.drop(columns=has_null), test.drop(columns=has_null)
 
-    # For offer and internet_type a null means "no offer" / "no internet",
-    # so "None" is the correct value, not a guess. I use it in every strategy below.
+    # Structural nulls: blank offer / internet_type means none.
     for df in (train, test):
         for col in ("offer", "internet_type"):
             if col in df:
@@ -57,11 +50,8 @@ def handle_nulls(train, test, strategy):
     text = [c for c in has_null if c not in numeric and c not in ("offer", "internet_type")]
 
     if strategy == "cross_source":
-        # Source 2 has values where source 1 is blank (e.g. the 11 new customers).
-        # Anything still missing after that falls back to the median.
-        # We compare this option but do not use it in the final pipeline: for those 11
-        # customers source 2 also says tenure 10 while source 1 says 0, so copying only
-        # the total would leave rows with tenure 0 and 10 months of charges.
+        # Fill from source 2, then median. Not used in the final pipeline: source 2
+        # gives those 11 customers tenure 10, which conflicts with tenure 0 in source 1.
         for col, backup in BACKUPS.items():
             if col in train and backup in train:
                 train[col] = train[col].fillna(train[backup])
@@ -69,14 +59,13 @@ def handle_nulls(train, test, strategy):
         strategy = "statistical"
 
     if strategy == "constant":
-        # Phase 1 rule and our final choice: the 11 blank totals are customers with
-        # tenure 0 who have not been billed yet, so their total is 0.
+        # Final choice: blank totals are tenure-0 customers, not billed yet -> 0.
         fills = {c: 0.0 for c in numeric}
     elif strategy == "statistical":
         fills = {c: train[c].median() for c in numeric}
     elif strategy == "knn":
         if numeric:
-            # I let KNN look at all numeric columns, but only write back the ones with nulls.
+            # KNN uses all numeric columns.
             feats = [c for c in train.columns if pd.api.types.is_numeric_dtype(train[c])
                      and c not in backups and c != TARGET]
             imputer = KNNImputer(n_neighbors=5).fit(train[feats])
@@ -86,7 +75,7 @@ def handle_nulls(train, test, strategy):
     else:
         raise ValueError(f"unknown null strategy {strategy}")
 
-    # Text columns get their most common training value.
+    # Text columns: most common training value.
     fills.update({c: train[c].mode()[0] for c in text})
     return train.fillna(fills), test.fillna(fills)
 
@@ -100,7 +89,7 @@ def iqr_fences(series, k=1.5):
 
 
 def usable_iqr_columns(df):
-    # I skip columns where Q1 == Q3 (mostly zeros), since IQR would flag every non-zero value.
+    # Skip columns with Q1 == Q3 (mostly zeros).
     cols = []
     for col in OUTLIER_COLUMNS:
         if col in df:
@@ -144,7 +133,7 @@ def handle_outliers(train, test, strategy):
     if strategy in ("remove_iqr", "cap_iqr"):
         fences = {c: iqr_fences(train[c])[2:] for c in usable_iqr_columns(train)}
         if strategy == "cap_iqr":
-            # I clip both sets with the fences learned on train (winsorizing).
+            # Clip with fences learned on train.
             for c, (low, high) in fences.items():
                 train[c] = train[c].clip(low, high)
                 test[c] = test[c].clip(low, high)
@@ -155,7 +144,7 @@ def handle_outliers(train, test, strategy):
         return train[keep], test
 
     if strategy == "winsorizer_fe":
-        # Same rule as cap_iqr, done with Feature-engine's Winsorizer.
+        # Same as cap_iqr, using Feature-engine.
         from feature_engine.outliers import Winsorizer
         usable = usable_iqr_columns(train)
         train[usable] = train[usable].astype(float)

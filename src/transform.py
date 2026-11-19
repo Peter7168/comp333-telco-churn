@@ -1,8 +1,4 @@
-"""Step 4: data transformation. Normalization, scaling and encoding.
-
-build_preprocessor() returns one scikit-learn ColumnTransformer, so every
-choice is fit on training rows only and applied the same way to new rows.
-"""
+"""Normalization, scaling and encoding in one ColumnTransformer."""
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -19,11 +15,11 @@ ENCODERS = ["drop", "ordinal", "onehot", "frequency", "target"]
 
 
 class DecimalScaler(BaseEstimator, TransformerMixin):
-    """Decimal scaling from the course: divide by 10^j so every |value| is below 1."""
+    """Decimal scaling: divide by 10^j so every |value| < 1."""
 
     def fit(self, X, y=None):
         biggest = np.abs(np.asarray(X, dtype=float)).max(axis=0)
-        # I pick the smallest j with max / 10^j < 1. A column of zeros keeps divisor 1.
+        # Smallest j with max / 10^j < 1 (all-zero columns keep divisor 1).
         j = np.where(biggest > 0, np.floor(np.log10(np.where(biggest > 0, biggest, 1))) + 1, 0)
         self.divisor_ = 10.0 ** j
         return self
@@ -46,7 +42,7 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         X = pd.DataFrame(X, columns=self.columns_)
-        # I give unseen categories a frequency of 0.
+        # Unseen categories get frequency 0.
         out = [X[c].map(f).fillna(0.0).to_numpy() for c, f in zip(self.columns_, self.freqs_)]
         return np.column_stack(out)
 
@@ -106,7 +102,7 @@ def build_preprocessor(binary, numeric, categorical, skewed,
     if regular:
         parts.append(("numeric", make_scaler(scaler), regular))
     if skewed:
-        # Skewed columns get normalized first, then scaled like the rest.
+        # Skewed columns: normalize, then scale.
         steps = [("normalize", make_normalizer(normalizer)), ("scale", make_scaler(scaler))]
         parts.append(("skewed", Pipeline(steps), skewed))
     if categorical:

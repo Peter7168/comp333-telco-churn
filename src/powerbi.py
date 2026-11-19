@@ -1,4 +1,4 @@
-"""Step 8: export the gold table for Power BI as a small star schema.
+"""Export the gold table for Power BI as a small star schema.
 
   fact_customers      one row per customer: measures + keys
   dim_contract        contract type
@@ -8,8 +8,7 @@
   dim_tenure_band     tenure band with a sort order
   model_experiments   F1 with and without each cleaning / transformation step
 
-Power BI reads these CSVs (Get data -> Text/CSV); results/powerbi/POWERBI_GUIDE.md says how
-to link them and which visuals to build.
+See results/powerbi/POWERBI_GUIDE.md.
 """
 import pandas as pd
 
@@ -55,7 +54,7 @@ def run(gold=None):
     OUT.mkdir(parents=True, exist_ok=True)
     df = gold.copy()
 
-    # I combine service and type into one key, e.g. "Fiber optic | Fiber Optic".
+    # Key combining service and type, e.g. "Fiber optic | Fiber Optic".
     df["internet_type"] = df["internet_type"].fillna("None")
     df["internet_key"] = df["internet_service"] + " | " + df["internet_type"]
     df["risk_level"] = pd.cut(df["churn_probability"], [-0.01, 0.3, 0.6, 1.0],

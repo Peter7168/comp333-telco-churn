@@ -1,10 +1,4 @@
-"""Step 3b: run the final cleaning + feature ETL on the whole table.
-
-  silver/customers_integrated  ->  silver/customers_clean  ->  gold/customer_features
-
-The experiments clean inside each fold; this step produces the tables the
-dashboard and the report read. It also saves the null and outlier reports.
-"""
+"""ETL: silver/customers_integrated -> silver/customers_clean -> gold/customer_features."""
 import pandas as pd
 
 from src import lake
@@ -16,7 +10,7 @@ from src.features import (ENG_BINARY, ENG_CATEGORICAL, ENG_NUMERIC, add_features
 
 
 def clean_full(df):
-    # I pass the same frame as "test" so the fit and the apply use all rows.
+    # Fit and apply on all rows.
     clean, _ = handle_nulls(df, df, FINAL.nulls)
     clean, _ = handle_outliers(clean, clean, FINAL.outliers)
     return clean
@@ -51,7 +45,7 @@ def run(df=None):
     print(outliers.to_string(index=False))
     print(f"isolation forest flags {forest_flagged} customers (2% contamination)")
 
-    # Three of the 11 blank totals, before and after the cross-source fill.
+    # Examples of blank totals before and after filling.
     clean = clean_full(df)
     blanks = df.loc[df["total_charges"].isna(), "customer_id"].head(3)
     examples = (df[df["customer_id"].isin(blanks)][["customer_id", "tenure", "monthly_charges",
@@ -60,7 +54,7 @@ def run(df=None):
                        suffixes=("_before", "_after")))
     examples.to_csv(TABLES / "null_fill_examples.csv", index=False)
 
-    # I drop the leaky status columns before anything downstream can use them.
+    # Drop leaky columns.
     clean = clean.drop(columns=[c for c in LEAKY_COLUMNS if c in clean])
     lake.write(clean, "silver", "customers_clean")
 

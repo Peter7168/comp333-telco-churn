@@ -1,4 +1,4 @@
-"""Static charts for the slides (PNG). The dashboard has the interactive versions."""
+"""Static charts (PNG) in results/figures."""
 import matplotlib
 
 matplotlib.use("Agg")
@@ -50,7 +50,7 @@ def dots(ax, labels, values, highlight=None, std=None):
         ax.errorbar(values, y, xerr=std, fmt="none", ecolor=GRID, elinewidth=2, zorder=1)
     ax.scatter(values, y, s=70, c=colors, zorder=2, edgecolors=SURFACE, linewidths=2)
     ax.set_yticks(y, labels)
-    ax.set_ylim(len(labels) - 0.4, -0.8)   # I leave room above the first label
+    ax.set_ylim(len(labels) - 0.4, -0.8)   # room above the first label
     ax.grid(axis="y", visible=False)
     for i, v in zip(y, values):
         ax.annotate(f"{v:.3f}", (v, i), xytext=(0, 9), textcoords="offset points",
@@ -69,14 +69,14 @@ def stages():
 def ablation(name, label_col, title, final_label):
     t = pd.read_csv(TABLES / f"exp_{name}.csv")
     fig, ax = plt.subplots(figsize=(7, 0.55 * len(t) + 1.3))
-    # I flag setups that were scored on fewer test rows (drop_rows), since that is not a fair comparison.
+    # Mark setups graded on fewer rows (e.g. drop_rows).
     full = t["test_rows"].max()
     labels = [f"{lab} ({r} test rows*)" if r < full else lab
               for lab, r in zip(t[label_col], t["test_rows"])]
     final_label = next(l for l in labels if l.startswith(final_label))
     dots(ax, labels, t["f1"], highlight=final_label, std=t["f1_std"])
     ax.set_title(title)
-    ax.set_xlabel("F1 (dot = mean of 5 folds, gray bar = ±1 std). Orange = our choice.")
+    ax.set_xlabel("F1 (dot = mean of 5 folds, gray bar = ±1 std). Orange = chosen option.")
     save(fig, f"02_{name}")
 
 
@@ -217,7 +217,7 @@ def erd():
         height = ROW_H * (len(rows) + 1)
         return x, top - height, x + BOX_W, top   # left, bottom, right, top
 
-    # I draw the links first so the boxes sit on top of them.
+    # Links first, so boxes are drawn on top.
     for a, b, label in ERD_LINKS:
         al, ab, ar, at = box(a)
         bl, bb, br, bt = box(b)

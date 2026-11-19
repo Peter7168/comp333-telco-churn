@@ -1,13 +1,6 @@
-"""Small storage layer over Delta Lake.
+"""Delta Lake storage (bronze = raw, silver = integrated/clean, gold = features).
 
-The lake has three layers:
-  bronze - raw files loaded as-is, one table per source file
-  silver - integrated and cleaned customer table
-  gold   - model-ready features
-
-I use the `deltalake` package (delta-rs), so no Spark cluster is needed.
-If it is not installed, I fall back to plain CSV in the same folders so the
-pipeline still runs; the README says how to install it.
+Uses the deltalake package; falls back to CSV if it is not installed.
 """
 import sqlite3
 
@@ -31,7 +24,7 @@ def write(df, layer, name):
     path = _path(layer, name)
     path.parent.mkdir(parents=True, exist_ok=True)
     if HAS_DELTA:
-        # I overwrite so each pipeline run creates a new Delta version.
+        # Overwrite creates a new Delta version each run.
         write_deltalake(str(path), df, mode="overwrite", schema_mode="overwrite")
     else:
         df.to_csv(path.with_suffix(".csv"), index=False)
@@ -43,8 +36,7 @@ def read(layer, name, version=None):
     path = _path(layer, name)
     if HAS_DELTA and path.exists():
         return DeltaTable(str(path), version=version).to_pandas()
-    # I only treat empty cells as missing. By default pandas also turns the text
-    # "None" into a blank, which would undo our "no offer" fill.
+    # Only empty cells are missing (keeps the text "None").
     return pd.read_csv(path.with_suffix(".csv"), keep_default_na=False, na_values=[""])
 
 

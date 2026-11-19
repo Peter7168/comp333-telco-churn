@@ -1,22 +1,19 @@
-"""Step 2b: entity resolution (ER) between the two sources.
+"""Entity resolution between the two sources.
 
-Both sources carry a customer ID, so the join itself is easy. Here I check that
-the ID link is trustworthy, and I show how the same customers can be matched
-WITHOUT the ID, the way we would have to if a source had no shared key:
-
-  1. key quality   - IDs are unique, well formed and match across sources
-  2. duplicates    - is the same customer stored twice under two IDs?
-  3. record linkage - blocking + attribute similarity, scored against the true IDs
+1. Key quality: IDs are unique, well formed and present in both sources.
+2. Duplicates: same attributes under different IDs.
+3. Record linkage without the ID: blocking + attribute similarity,
+   then checked against the real IDs.
 """
 import pandas as pd
 
 from src.config import TABLES
 from src.integrate import build_source1, build_source2
 
-# Blocking: only compare records that agree on these cheap, stable attributes.
+# Blocking keys: only records that agree on these are compared.
 BLOCK = ["gender", "senior_citizen", "partner", "phone_service", "paperless_billing",
          "monthly_charges"]
-# Matching: attributes compared inside a block to score each candidate pair.
+# Attributes used to score each candidate pair.
 COMPARE = ["tenure", "total_charges", "contract", "dependents", "multiple_lines",
            "online_security", "online_backup", "device_protection", "tech_support",
            "streaming_tv", "streaming_movies"]
@@ -29,7 +26,7 @@ def prepare(df):
     out = df[["customer_id"] + BLOCK + COMPARE].copy()
     for col in COMPARE:
         if col not in NUMERIC and col != "dependents":
-            # Source 1 says "No internet service" where source 2 just says "No".
+            # "No internet service" in source 1 is "No" in source 2.
             out[col] = out[col].replace({"No internet service": "No", "No phone service": "No"})
     out["monthly_charges"] = out["monthly_charges"].round(2)
     return out
@@ -56,7 +53,7 @@ def link_without_ids(s1, s2):
     """Match each source 1 record to a source 2 record using attributes only."""
     pairs = s1.merge(s2, on=BLOCK, suffixes=("_s1", "_s2"))
 
-    # I score each candidate pair by the share of attributes that agree.
+    # Score = share of attributes that agree.
     agree = pd.DataFrame(index=pairs.index)
     for col in COMPARE:
         a, b = pairs[f"{col}_s1"], pairs[f"{col}_s2"]
@@ -66,7 +63,7 @@ def link_without_ids(s1, s2):
             agree[col] = a.astype(str).eq(b.astype(str))
     pairs["score"] = agree.mean(axis=1)
 
-    # The best-scoring candidate wins. A tie for first place means I cannot decide.
+    # Best score wins; ties are left undecided.
     best = pairs.groupby("customer_id_s1")["score"].transform("max")
     top = pairs[pairs["score"] == best]
     n_top = top.groupby("customer_id_s1")["customer_id_s2"].transform("size")
@@ -102,7 +99,7 @@ def run():
     stats, examples = link_without_ids(s1, s2)
     summary.update(stats)
 
-    # I store values as text so counts print as 7043, not 7043.00.
+    # Values stored as text for clean printing.
     values = [f"{v:,}" if isinstance(v, int) else str(v) for v in summary.values()]
     table = pd.DataFrame({"check": list(summary), "value": values})
     print(table.to_string(index=False))

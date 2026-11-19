@@ -1,8 +1,4 @@
-"""Functional dependency checks on the integrated table.
-
-A dependency X -> Y holds when every value of X maps to exactly one value of Y.
-I test each candidate on all rows and report how many X groups break it.
-"""
+"""Functional dependency checks: X -> Y holds if each X value maps to one Y value."""
 import pandas as pd
 
 from src import lake

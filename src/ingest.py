@@ -19,7 +19,7 @@ def load_sources():
     tables = {}
 
     for f in GITHUB_FILES:
-        # I keep text as text here; type fixes happen in integration.
+        # Read as text; types are fixed in integration.
         df = pd.read_csv(GITHUB_DIR / f, dtype=str, keep_default_na=False)
         tables["github_" + f.removesuffix(".csv")] = (df, GITHUB_DIR / f, "IBM GitHub (CSV)")
 
@@ -32,7 +32,7 @@ def load_sources():
 
 
 def count_nulls(df):
-    # I count real NaNs plus text cells that are only spaces (like TotalCharges).
+    # NaN cells plus whitespace-only text cells (e.g. TotalCharges).
     blanks = 0
     for col in df.columns:
         if not pd.api.types.is_numeric_dtype(df[col]):
@@ -56,7 +56,7 @@ def run():
 
     stats = pd.DataFrame(stats)
     stats.to_csv(TABLES / "dataset_stats.csv", index=False)
-    # I print the short view; the CSV keeps every column.
+    # Short view for the console; the CSV has every column.
     short = stats.assign(file=stats["file"].str.replace("Telco_customer_churn_", ""))
     print(short[["file", "rows", "columns", "null_cells", "size_mb"]].to_string(index=False))
     print(f"\n{len(stats)} files, {stats['size_mb'].sum():.2f} MB total")

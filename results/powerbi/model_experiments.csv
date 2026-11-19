@@ -58,7 +58,7 @@ stress,outliers: remove_iqr,0.6173,0.8329,0.7462,1126
 stress,outliers: cap_iqr,0.6221,0.8409,0.7423,1126
 stress,outliers: remove_zscore,0.6216,0.8356,0.7442,1126
 stress,outliers: isolation_forest,0.6179,0.8369,0.7391,1126
-feature_engine,our IQR capping (final),0.6792,0.8883,0.8001,1126
-feature_engine,Feature-engine Winsorizer,0.6792,0.8883,0.8001,1126
-feature_engine,Feature-engine RareLabelEncoder + one-hot,0.6855,0.8942,0.7991,1126
-feature_engine,Feature-engine DropCorrelatedFeatures,0.6774,0.8882,0.7989,1126
+feature_engine,our IQR capping (final),0.6794,0.8883,0.8003,1126
+feature_engine,Feature-engine Winsorizer,0.6794,0.8883,0.8003,1126
+feature_engine,Feature-engine RareLabelEncoder + one-hot,0.6851,0.8942,0.7989,1126
+feature_engine,Feature-engine DropCorrelatedFeatures,0.6782,0.8884,0.7996,1126

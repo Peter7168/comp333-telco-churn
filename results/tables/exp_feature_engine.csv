@@ -1,0 +1,5 @@
+experiment,setup,f1,accuracy,precision,recall,roc_auc,f1_std,train_rows,test_rows,n_features,use_source2,use_engineered,nulls,outliers,normalizer,scaler,encoder,model,top_k,drop_correlated
+feature_engine,our IQR capping (final),0.6794,0.8003,0.5919,0.7973,0.8883,0.0233,4507,1126,1168,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,False
+feature_engine,Feature-engine Winsorizer,0.6794,0.8003,0.5919,0.7973,0.8883,0.0233,4507,1126,1168,True,True,constant,winsorizer_fe,yeo_johnson,standard,onehot,logreg,0,False
+feature_engine,Feature-engine RareLabelEncoder + one-hot,0.6851,0.7989,0.586,0.8247,0.8942,0.0206,4507,1126,94,True,True,constant,cap_iqr,yeo_johnson,standard,rare_onehot,logreg,0,False
+feature_engine,Feature-engine DropCorrelatedFeatures,0.6782,0.7996,0.5909,0.796,0.8884,0.0236,4507,1126,1166,True,True,constant,cap_iqr,yeo_johnson,standard,onehot,logreg,0,True

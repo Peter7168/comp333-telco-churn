@@ -1,6 +1,0 @@
-internet_key,internet_service,internet_type
-DSL | Cable,DSL,Cable
-DSL | DSL,DSL,DSL
-Fiber optic | Cable,Fiber optic,Cable
-Fiber optic | Fiber Optic,Fiber optic,Fiber Optic
-No | None,No,None

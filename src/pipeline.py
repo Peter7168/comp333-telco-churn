@@ -9,7 +9,6 @@
   5b. fe_tools    Feature-engine transformers compared with our own steps
   6. train        final model               -> models/churn_model.joblib
   7. figures      charts for the report     -> results/figures
-  8. powerbi      star schema for Power BI  -> results/powerbi
 
 --skip-experiments skips step 5.
 """
@@ -17,7 +16,7 @@ import sys
 import time
 
 from src import (dependencies, entity_resolution, etl, experiments, fe_tools, figures, ingest,
-                 integrate, lake, powerbi, train)
+                 integrate, lake, train)
 
 
 def step(name, fn, *args):
@@ -42,7 +41,6 @@ def main():
     step("feature-engine", fe_tools.run, integrated)
     step("train", train.run, integrated)
     step("figures", figures.run)
-    step("power bi export", powerbi.run)
 
 
 if __name__ == "__main__":

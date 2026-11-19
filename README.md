@@ -19,10 +19,9 @@ using two IBM data sources about the same 7,043 customers.
 | `data/raw/` | The 8 source files (3 CSV + 5 Excel) |
 | `results/tables/` | All results as CSV |
 | `results/figures/` | Charts |
-| `results/powerbi/` | Data and guide for the Power BI report |
 | `tests/` | Automated checks, run on GitHub on every push |
 
-**Tools:** Google Colab, pandas, scikit-learn, Feature-engine, Delta Lake, SQLite, Streamlit, Power BI.
+**Tools:** Google Colab, pandas, scikit-learn, Feature-engine, Delta Lake, SQLite, Streamlit.
 
 ## How to run
 
@@ -57,8 +56,6 @@ streamlit run dashboard/app.py   # opens the dashboard at http://localhost:8501
 `python -m src.pipeline --skip-experiments` is a 1-minute version that reuses the saved
 experiment results.
 
-**Power BI:** open Power BI Desktop and follow `results/powerbi/POWERBI_GUIDE.md`.
-
 ## Pipeline
 
 | Step | File | Output |
@@ -70,7 +67,7 @@ experiment results.
 | Build features (ETL) | `src/features.py`, `src/etl.py` | gold layer |
 | Compare every option | `src/experiments.py` | F1 with and without each step |
 | Train and save the model | `src/train.py`, `src/predict.py` | `models/churn_model.joblib` |
-| Charts and Power BI export | `src/figures.py`, `src/powerbi.py` | `results/` |
+| Charts | `src/figures.py` | `results/figures/` |
 
 ## Results
 

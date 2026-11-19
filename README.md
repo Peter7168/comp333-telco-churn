@@ -20,6 +20,7 @@ Power BI (report on the exported star schema), matplotlib.
 | Folder | Content |
 |---|---|
 | `report/` | The final report (Word) |
+| `presentation/` | The presentation slides (PowerPoint) |
 | `data/raw/ibm_github/` | Source 1: the IBM Telco CSV and the three tables we split it into |
 | `data/raw/ibm_cognos/` | Source 2: the five Excel files of the IBM Cognos 11.1.3 Telco module |
 | `src/` | The pipeline, one Python file per step |

@@ -1,164 +1,98 @@
-# COMP 333 Project: Telco Customer Churn
+# Telco Customer Churn
 
-**Team Stats and Furious:** Mohammed Al-Nabulsi, Mehran Bordbar, Marc El Haddad, Samer Hasna,
-Peter Samaha, Boudy Joe Samaha, Georges Ojeil
+**COMP 333 · Team Stats and Furious**
+Mohammed Al-Nabulsi, Mehran Bordbar, Marc El Haddad, Samer Hasna, Peter Samaha, Boudy Joe Samaha, Georges Ojeil
 
-We predict which telecom customers will cancel their service (binary classification). The
-project integrates two data sources, cleans and transforms the data, stores it in a Delta
-Lake, trains a model and serves it in a dashboard.
+We predict whether a telecom customer will cancel their service (**binary classification**),
+using two IBM data sources about the same 7,043 customers.
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Peter7168/comp333-telco-churn/blob/main/notebooks/COMP333_Telco_Churn_Colab.ipynb)
 
-**Tools:** Google Colab (data science platform), pandas, scikit-learn and Feature-engine (data
-preparation and ETL), Delta Lake (data lake), SQLite, Streamlit (dashboard and deployed model),
-Power BI (report on the exported star schema), matplotlib.
+## Repository
 
-**Start with the report:** [`report/COMP333_Final_Report.docx`](report/COMP333_Final_Report.docx).
-
-## What is in this repository
-
-| Folder | Content |
+| Folder | Contents |
 |---|---|
-| `report/` | The final report (Word) |
-| `presentation/` | The presentation slides (PowerPoint) |
-| `data/raw/ibm_github/` | Source 1: the IBM Telco CSV and the three tables we split it into |
-| `data/raw/ibm_cognos/` | Source 2: the five Excel files of the IBM Cognos 11.1.3 Telco module |
-| `src/` | The pipeline, one Python file per step |
-| `notebooks/` | The Google Colab notebook that runs the whole project step by step |
-| `dashboard/` | The Streamlit dashboard, with a form that scores a new customer |
-| `results/tables/` | Every table of results as CSV (mapping, conflicts, experiments, ...) |
-| `results/figures/` | The figures used in the report |
-| `results/powerbi/` | Star-schema CSVs for Power BI and a guide to build the report |
-| `tests/` | Checks on the lake, the model and the dashboard |
-| `scripts/` | Rebuilds the three Phase 1 tables from the original CSV |
+| `presentation/` | Slides |
+| `notebooks/` | Google Colab notebook that runs everything step by step |
+| `src/` | Pipeline code, one file per step |
+| `dashboard/` | Streamlit dashboard with live predictions |
+| `data/raw/` | The 8 source files (3 CSV + 5 Excel) |
+| `results/tables/` | All results as CSV |
+| `results/figures/` | Charts |
+| `results/powerbi/` | Data and guide for the Power BI report |
+| `tests/` | Automated checks, run on GitHub on every push |
 
-## Running on Google Colab (no installation)
+**Tools:** Google Colab, pandas, scikit-learn, Feature-engine, Delta Lake, SQLite, Streamlit, Power BI.
 
-Click the **Open in Colab** badge above, then **Runtime → Run all**. The first cell downloads
-the repository; because the repository is private, it asks for a GitHub token with read
-access (GitHub → Settings → Developer settings → Personal access tokens). The full run takes
-about 10 minutes; set `RUN_EXPERIMENTS = False` in the first cell to reuse our saved experiment
-results (about 2 minutes).
+## How to run
 
-## Running on your own computer
+### Option 1: Google Colab (nothing to install)
 
-### Installation
+Click **Open in Colab** above, then **Runtime → Run all**.
+The repository is private, so the first cell asks for a GitHub token with read access.
 
-You need **Python 3.11 or newer** and **Git**.
+### Option 2: Your computer
+
+Requires Python 3.11+ and Git.
 
 ```bash
 git clone https://github.com/Peter7168/comp333-telco-churn.git
 cd comp333-telco-churn
-```
-
-Create a virtual environment and install the libraries.
-
-Windows (PowerShell):
-
-```powershell
 python -m venv .venv
-.venv\Scripts\activate
+```
+
+Activate the environment:
+
+* Windows: `.venv\Scripts\activate`
+* Mac / Linux: `source .venv/bin/activate`
+
+Then:
+
+```bash
 pip install -r requirements.txt
+python -m src.pipeline           # runs everything (about 6 min)
+streamlit run dashboard/app.py   # opens the dashboard at http://localhost:8501
 ```
 
-Mac or Linux:
+`python -m src.pipeline --skip-experiments` is a 1-minute version that reuses the saved
+experiment results.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+**Power BI:** open Power BI Desktop and follow `results/powerbi/POWERBI_GUIDE.md`.
 
-### Running
+## Pipeline
 
-**1. Run the pipeline** (about 6 minutes):
+| Step | File | Output |
+|---|---|---|
+| Load the 8 files | `src/ingest.py` | Delta Lake bronze layer |
+| Integrate both sources | `src/integrate.py`, `src/entity_resolution.py`, `src/dependencies.py` | silver layer |
+| Clean | `src/clean.py` | nulls filled, outliers capped |
+| Transform | `src/transform.py`, `src/fe_tools.py` | normalization, scaling, encoding |
+| Build features (ETL) | `src/features.py`, `src/etl.py` | gold layer |
+| Compare every option | `src/experiments.py` | F1 with and without each step |
+| Train and save the model | `src/train.py`, `src/predict.py` | `models/churn_model.joblib` |
+| Charts and Power BI export | `src/figures.py`, `src/powerbi.py` | `results/` |
 
-```bash
-python -m src.pipeline
-```
-
-The first line printed should be `storage: Delta Lake`. The pipeline then:
-
-- loads the 8 raw files into the bronze layer of the lake (`data/lake/`)
-- integrates the two sources and writes the silver tables
-- checks entity resolution and functional dependencies
-- cleans the data, builds features and writes the gold table
-- runs every experiment (with and without each cleaning and transformation step)
-- trains the final model and saves it to `models/churn_model.joblib`
-- compares three Feature-engine transformers with our own steps
-- rewrites `results/tables/` and `results/figures/`, and exports the Power BI tables
-
-For a quick run that skips the experiments (about 1 minute) and uses the experiment tables
-already in `results/tables/`:
-
-```bash
-python -m src.pipeline --skip-experiments
-```
-
-**2. Open the dashboard:**
-
-```bash
-streamlit run dashboard/app.py
-```
-
-It opens in the browser at http://localhost:8501. Stop it with Ctrl+C.
-
-**3. Power BI** (Windows): open Power BI Desktop and follow
-[`results/powerbi/POWERBI_GUIDE.md`](results/powerbi/POWERBI_GUIDE.md) to load the exported
-tables and build the report.
-
-**4. Run the checks** (optional):
-
-```bash
-pip install pytest
-pytest -q tests
-```
-
-## The pipeline, file by file
-
-| File | What it does |
-|---|---|
-| `src/ingest.py` | Loads the 3 CSV and 5 XLSX files into the bronze layer |
-| `src/integrate.py` | Schema mapping, value mapping, joins, conflict report |
-| `src/entity_resolution.py` | Matches the two sources without the customer ID, as a check on the join |
-| `src/dependencies.py` | Functional dependency checks |
-| `src/clean.py` | Null strategies and outlier strategies |
-| `src/transform.py` | Normalization, scaling and encoding |
-| `src/fe_tools.py` | Feature-engine: Winsorizer, RareLabelEncoder, DropCorrelatedFeatures |
-| `src/features.py`, `src/etl.py` | Engineered features, clean silver table, gold table, feature ranking |
-| `src/experiments.py` | Locks a 20% test set, then 5-fold cross-validation for every option |
-| `src/train.py`, `src/predict.py` | Final model, test-set evaluation, saved model, scoring |
-| `src/lake.py` | Delta Lake layers (bronze, silver, gold) and the SQLite copy for the dashboard |
-| `src/figures.py` | Figures for the report |
-| `src/powerbi.py` | Exports the gold table as a star schema for Power BI |
-| `src/pipeline.py` | Runs all of the above in order |
-
-## Main result
-
-On a test set of 1,409 customers that no experiment used, the final model (gradient boosting)
-catches 288 of the 374 customers who left. F1 is 0.695 and ROC-AUC is 0.900.
+## Results
 
 | Stage (logistic regression, 5-fold CV) | F1 |
 |---|---|
-| 1. Source 1 only, minimal preparation | 0.626 |
-| 2. + cleaning | 0.626 |
-| 3. + transformation | 0.632 |
-| 4. + integration of source 2 | 0.682 |
-| 5. + engineered features | 0.679 |
+| Raw source 1 | 0.626 |
+| + cleaning | 0.626 |
+| + transformation | 0.632 |
+| + second source | 0.682 |
+| + engineered features | 0.679 |
 
-The report explains each step and discusses these numbers.
+**Final model:** gradient boosting. On 1,409 test customers held out from the start, it
+catches 288 of the 374 who left (77%). F1 0.695, ROC-AUC 0.90.
 
 ## Data sources
 
-- **Source 1:** IBM Telco Customer Churn sample,
-  https://github.com/IBM/telco-customer-churn-on-icp4d
-- **Source 2:** IBM Cognos Analytics 11.1.3 "Telco customer churn" sample module,
+* IBM Telco Customer Churn (CSV): https://github.com/IBM/telco-customer-churn-on-icp4d
+* IBM Cognos Analytics 11.1.3 Telco customer churn module (Excel):
   https://community.ibm.com/community/user/businessanalytics/blogs/steven-macko/2019/07/11/telco-customer-churn-1113
 
 ## Troubleshooting
 
-- **`python` is not recognized (Windows):** reinstall Python and tick "Add Python to PATH".
-- **"running scripts is disabled" when activating (Windows):** run
-  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then activate again.
-- **The first line says `CSV fallback`:** the `deltalake` package did not install. Run
-  `pip install deltalake pyarrow`. The pipeline still works without it, storing CSV files.
+* **`python` not recognized (Windows):** reinstall Python with "Add Python to PATH" ticked.
+* **"running scripts is disabled" (Windows):** run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, then activate again.
+* **First line says `CSV fallback`:** run `pip install deltalake pyarrow`.

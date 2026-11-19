@@ -173,7 +173,9 @@ def run():
 
     conflicts, examples = compare_shared(s1, s2)
     print("\nconflicts between sources:")
-    print(conflicts.to_string(index=False))
+    disagree = conflicts[conflicts["conflicts"] > 0]
+    print(disagree.to_string(index=False))
+    print(f"the other {len(conflicts) - len(disagree)} shared attributes agree for every customer")
 
     # Source 1 wins for shared attributes, so I keep only the new columns from source 2.
     # I also keep the source 2 tenure and total_charges for the null-filling experiment.

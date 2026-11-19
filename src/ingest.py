@@ -56,7 +56,9 @@ def run():
 
     stats = pd.DataFrame(stats)
     stats.to_csv(TABLES / "dataset_stats.csv", index=False)
-    print(stats.to_string(index=False))
+    # I print the short view; the CSV keeps every column.
+    short = stats.assign(file=stats["file"].str.replace("Telco_customer_churn_", ""))
+    print(short[["file", "rows", "columns", "null_cells", "size_mb"]].to_string(index=False))
     print(f"\n{len(stats)} files, {stats['size_mb'].sum():.2f} MB total")
     return stats
 

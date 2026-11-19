@@ -76,6 +76,27 @@ def test_result_tables_exist():
         assert len(pd.read_csv(TABLES / f"{name}.csv")) > 0, name
 
 
+def test_feature_engine_results():
+    if not ON_CI:
+        pytest.importorskip("feature_engine")
+    capped = pd.read_csv(TABLES / "feature_engine_winsorizer.csv")
+    # Feature-engine's IQR caps must be the same as ours.
+    assert capped["max_difference_vs_ours"].abs().max() < 1e-6
+    assert len(pd.read_csv(TABLES / "exp_feature_engine.csv")) == 4
+
+
+def test_powerbi_export_links_up():
+    out = ROOT / "results" / "powerbi"
+    fact = pd.read_csv(out / "fact_customers.csv", keep_default_na=False)
+    assert len(fact) == 7043
+    for dim, key in [("dim_contract", "contract"), ("dim_payment", "payment_method"),
+                     ("dim_internet", "internet_key"), ("dim_location", "zip_code"),
+                     ("dim_tenure_band", "tenure_band")]:
+        table = pd.read_csv(out / f"{dim}.csv", keep_default_na=False)
+        assert table[key].is_unique, dim
+        assert fact[key].isin(table[key]).all(), dim
+
+
 def test_dashboard_loads_and_predicts():
     if ON_CI:
         from streamlit.testing.v1 import AppTest

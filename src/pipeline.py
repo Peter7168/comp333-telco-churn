@@ -6,16 +6,18 @@
   3. dependencies functional dependency checks
   4. etl          cleaning + new features   -> silver/customers_clean, gold/customer_features
   5. experiments  F1 with and without each cleaning / transformation step
+  5b. fe_tools    Feature-engine transformers compared with our own steps
   6. train        final model               -> models/churn_model.joblib
-  7. figures      charts for the slides     -> results/figures
+  7. figures      charts for the report     -> results/figures
+  8. powerbi      star schema for Power BI  -> results/powerbi
 
 Add --skip-experiments to skip step 5 (it takes about 5 minutes).
 """
 import sys
 import time
 
-from src import (dependencies, entity_resolution, etl, experiments, figures, ingest,
-                 integrate, lake, train)
+from src import (dependencies, entity_resolution, etl, experiments, fe_tools, figures, ingest,
+                 integrate, lake, powerbi, train)
 
 
 def step(name, fn, *args):
@@ -37,8 +39,10 @@ def main():
     step("etl", etl.run, integrated)
     if not skip_experiments:
         step("experiments", experiments.run, integrated)
+    step("feature-engine", fe_tools.run, integrated)
     step("train", train.run, integrated)
     step("figures", figures.run)
+    step("power bi export", powerbi.run)
 
 
 if __name__ == "__main__":

@@ -10,3 +10,6 @@ venv/
 .ipynb_checkpoints/
 .DS_Store
 warn.log
+
+# Notebook copies made by the GitHub check
+notebooks/ci_run*.ipynb

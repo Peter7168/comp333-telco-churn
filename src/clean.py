@@ -154,6 +154,18 @@ def handle_outliers(train, test, strategy):
             keep &= train[c].between(low, high).to_numpy()
         return train[keep], test
 
+    if strategy == "winsorizer_fe":
+        # Same rule as cap_iqr, done with Feature-engine's Winsorizer.
+        from feature_engine.outliers import Winsorizer
+        usable = usable_iqr_columns(train)
+        train[usable] = train[usable].astype(float)
+        test[usable] = test[usable].astype(float)
+        capper = Winsorizer(capping_method="iqr", tail="both", fold=1.5, variables=usable)
+        capper.fit(train[usable])
+        train[usable] = capper.transform(train[usable])
+        test[usable] = capper.transform(test[usable])
+        return train, test
+
     if strategy == "remove_zscore":
         z = (train[cols] - train[cols].mean()) / train[cols].std()
         return train[(z.abs() <= 3).all(axis=1)], test

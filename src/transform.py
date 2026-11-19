@@ -74,7 +74,19 @@ def make_normalizer(name):
     }[name]
 
 
+def rare_onehot():
+    """Feature-engine groups categories under 0.5% of customers into "Rare", then one-hot."""
+    from feature_engine.encoding import RareLabelEncoder
+    return Pipeline([
+        ("rare", RareLabelEncoder(tol=0.005, n_categories=1, replace_with="Rare",
+                                  ignore_format=True)),
+        ("onehot", OneHotEncoder(handle_unknown="ignore", drop="if_binary", sparse_output=False)),
+    ])
+
+
 def make_encoder(name):
+    if name == "rare_onehot":
+        return rare_onehot()
     return {
         "drop": "drop",
         "ordinal": OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1),

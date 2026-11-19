@@ -1,7 +1,7 @@
 name: pipeline check
 
-# Installs the real requirements on a clean machine, runs the pipeline with
-# Delta Lake, then tests the lake, the model and the Streamlit dashboard.
+# Installs the real requirements on a clean machine, runs the pipeline with Delta Lake and
+# Feature-engine, tests the lake, the model and the dashboard, then runs the Colab notebook.
 on:
   push:
     branches: [main]
@@ -10,7 +10,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,8 +18,15 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install requirements
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt pytest nbconvert ipykernel
       - name: Run the pipeline (experiment tables are already in the repo)
         run: python -m src.pipeline --skip-experiments
-      - name: Test lake, model and dashboard
+      - name: Test lake, model, dashboard and exports
         run: pytest -q tests
+      - name: Run the Colab notebook from start to finish
+        run: |
+          sed 's/RUN_EXPERIMENTS = True/RUN_EXPERIMENTS = False/' notebooks/COMP333_Telco_Churn_Colab.ipynb > /tmp/nb.ipynb
+          cp /tmp/nb.ipynb notebooks/ci_run.ipynb
+          jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=1200 notebooks/ci_run.ipynb --output ci_run_done.ipynb
+      - name: Print the Feature-engine results
+        run: for f in results/tables/feature_engine_*.csv results/tables/exp_feature_engine.csv; do echo "== $f"; cat "$f"; done

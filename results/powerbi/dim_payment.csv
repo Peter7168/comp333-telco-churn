@@ -1,0 +1,5 @@
+payment_method,is_automatic
+Bank transfer (automatic),1
+Credit card (automatic),1
+Electronic check,0
+Mailed check,0

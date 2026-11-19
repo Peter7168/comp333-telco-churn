@@ -43,6 +43,7 @@ class Recipe:
     encoder: str = "onehot"
     model: str = "logreg"
     top_k: int = 0          # keep only the k best-ranked features (0 = keep all)
+    drop_correlated: bool = False   # drop repeated numeric features (Feature-engine)
 
 
 # The setup we present as our final pipeline. Experiments vary one field at a time.
@@ -89,6 +90,13 @@ def prepare_fold(train, test, recipe):
         binary, numeric, categorical = ([c for c in binary if c in best],
                                         [c for c in numeric if c in best],
                                         [c for c in categorical if c in best])
+    if recipe.drop_correlated:
+        # Feature-engine finds numeric features that repeat each other (|r| > 0.9),
+        # again learned on the training rows only.
+        from feature_engine.selection import DropCorrelatedFeatures
+        finder = DropCorrelatedFeatures(threshold=0.9, variables=numeric)
+        finder.fit(train[numeric].astype(float))
+        numeric = [c for c in numeric if c not in finder.features_to_drop_]
     pre = build_preprocessor(binary, numeric, categorical, SKEWED,
                              scaler=recipe.scaler, normalizer=recipe.normalizer,
                              encoder=recipe.encoder)

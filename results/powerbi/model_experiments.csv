@@ -1,0 +1,64 @@
+experiment,option,f1,roc_auc,accuracy,rows_graded
+stages,1. raw source 1,0.6263,0.8442,0.746,1125
+stages,2. + cleaning,0.6262,0.8445,0.7462,1126
+stages,3. + transformation,0.6325,0.8496,0.7559,1126
+stages,4. + integration (source 2),0.682,0.8891,0.8012,1126
+stages,5. + ETL features,0.6792,0.8883,0.8001,1126
+nulls,drop_rows,0.697,0.8805,0.7901,404
+nulls,drop_columns,0.6731,0.8872,0.7954,1126
+nulls,constant,0.6792,0.8883,0.8001,1126
+nulls,statistical,0.6778,0.8882,0.7991,1126
+nulls,cross_source,0.6782,0.8882,0.7993,1126
+nulls,knn,0.6782,0.8881,0.7993,1126
+outliers,keep,0.6794,0.8886,0.8003,1126
+outliers,remove_iqr,0.6802,0.8859,0.8064,1126
+outliers,cap_iqr,0.6792,0.8883,0.8001,1126
+outliers,remove_zscore,0.6782,0.888,0.7994,1126
+outliers,isolation_forest,0.6806,0.8889,0.8014,1126
+normalizers,none,0.6771,0.8876,0.7973,1126
+normalizers,log,0.6796,0.8892,0.7982,1126
+normalizers,yeo_johnson,0.6792,0.8883,0.8001,1126
+normalizers,quantile,0.669,0.8806,0.7918,1126
+scalers,none | logreg,0.6811,0.8876,0.8005,1126
+scalers,standard | logreg,0.6792,0.8883,0.8001,1126
+scalers,minmax | logreg,0.6792,0.8868,0.7989,1126
+scalers,robust | logreg,0.6806,0.8879,0.8007,1126
+scalers,maxabs | logreg,0.6792,0.8866,0.7987,1126
+scalers,decimal | logreg,0.6807,0.8856,0.7993,1126
+scalers,none | knn,0.5141,0.8045,0.7904,1126
+scalers,standard | knn,0.6085,0.8474,0.8046,1126
+scalers,minmax | knn,0.6064,0.8396,0.8014,1126
+scalers,robust | knn,0.6112,0.849,0.8042,1126
+scalers,maxabs | knn,0.6043,0.8398,0.8003,1126
+scalers,decimal | knn,0.6061,0.8411,0.8,1126
+encoders,drop,0.6695,0.8857,0.7849,1126
+encoders,ordinal,0.6755,0.8881,0.7897,1126
+encoders,onehot,0.6792,0.8883,0.8001,1126
+encoders,frequency,0.675,0.8878,0.7897,1126
+encoders,target,0.678,0.8878,0.7922,1126
+feature_selection,top 5,0.5814,0.7908,0.7043,1126
+feature_selection,top 10,0.6288,0.8428,0.7591,1126
+feature_selection,top 15,0.633,0.8477,0.7639,1126
+feature_selection,top 20,0.6382,0.8528,0.7691,1126
+feature_selection,top 30,0.642,0.8594,0.7723,1126
+feature_selection,all,0.6792,0.8883,0.8001,1126
+models,logreg,0.6792,0.8883,0.8001,1126
+models,knn,0.6085,0.8474,0.8046,1126
+models,random_forest,0.6573,0.8658,0.7819,1126
+models,hist_gb,0.696,0.8967,0.8245,1126
+stress,clean data (reference),0.6293,0.846,0.7492,1126
+stress,nulls: drop_rows,0.6158,0.836,0.7379,825
+stress,nulls: drop_columns,0.615,0.8319,0.7336,1126
+stress,nulls: constant,0.6154,0.8355,0.7352,1126
+stress,nulls: statistical,0.615,0.8359,0.7355,1126
+stress,nulls: cross_source,0.6146,0.8365,0.7359,1126
+stress,nulls: knn,0.6125,0.8358,0.7341,1126
+stress,outliers: keep,0.6154,0.8355,0.7352,1126
+stress,outliers: remove_iqr,0.6173,0.8329,0.7462,1126
+stress,outliers: cap_iqr,0.6221,0.8409,0.7423,1126
+stress,outliers: remove_zscore,0.6216,0.8356,0.7442,1126
+stress,outliers: isolation_forest,0.6179,0.8369,0.7391,1126
+feature_engine,our IQR capping (final),0.6792,0.8883,0.8001,1126
+feature_engine,Feature-engine Winsorizer,0.6792,0.8883,0.8001,1126
+feature_engine,Feature-engine RareLabelEncoder + one-hot,0.6855,0.8942,0.7991,1126
+feature_engine,Feature-engine DropCorrelatedFeatures,0.6774,0.8882,0.7989,1126
